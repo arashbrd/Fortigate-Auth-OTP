@@ -1,0 +1,26 @@
+{% extends "base/other-page.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class=" col-md-12 text-center">
+<h3>Process Steps</h3>
+<ul id="steps" >
+    <li id="step1">Step 1 <span id="icon1" class="icon waiting">⏳</span></li>
+    <li id="step2">Step 2 <span id="icon2" class="icon waiting">⏳</span></li>
+    <li id="step3">Step 3 <span id="icon3" class="icon waiting">⏳</span></li>
+</ul>
+<button id="start-process" class="btn btn-primary">Start</button>
+<div id="error-message" class="error-message"></div>
+</div>
+
+
+    {% endblock %}
+    {% block extra_js %}
+    <script src="{% static 'js/customsteps.js' %}"></script>
+	
+	{% endblock %}
+
+    
+

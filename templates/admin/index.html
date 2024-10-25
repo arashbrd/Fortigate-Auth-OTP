@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+
+
+{% block sidebar %}
+
+{{ block.super }}  {# This renders the default content #}
+    
+    
+    <div class="module" id="fortigate-specs">
+        <h2>مشخصات فایروال</h2>
+        <ul>
+            {% for key, value in fortigate_specs.items %}
+                <li><strong>{{ key }}:</strong> {{ value }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

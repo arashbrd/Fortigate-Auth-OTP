@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title> گذرنگار---احراز هویت دو مرحله ای فایروال فورتی گیت</title>
+		{%include 'base/css-header.html' %}
+</head>
+<body>
+	<div class="gtco-loader"></div>
+	<div id="page">
+		
+
+		{% include 'base/nav.html' %}
+		{% include 'base/header.html' %}
+
+		<!--start top 3 -->
+		<div id="gtco-features">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-4 col-sm-4">
+						<div class="feature-center animate-box" data-animate-effect="fadeIn">
+							<span class="icon">
+								<i class="icon-eye"></i>
+							</span>
+							<h3> اتصال به فایروال فورتی گیت</h3>
+							<p>امکان اتصال از طریق API به فایروال فورتی گیت</p>
+							
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="feature-center animate-box" data-animate-effect="fadeIn">
+							<span class="icon">
+								<i class="icon-home"></i>
+							</span>
+							<h3> مدیریت یکپارچه کاربران </h3>
+							<p>دسترسی ادمین به اطلاعات کاربران از طریق پنل موجود میباشد</p>
+							
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="feature-center animate-box" data-animate-effect="fadeIn">
+							<span class="icon">
+								<i class="icon-power"></i>
+							</span>
+							<h3> امکان تعریف تعداد نامحدود کاربر</h3>
+							<p>ادمین میتواند تعداد نامحدود کاربر تعریف نماید.</p>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--end top 3 -->
+
+		<!--start why us -->
+		<div id="gtco-features-2">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-8 col-md-offset-2 text-center gtco-heading">
+						<h2>چگونه استفاده کنم؟</h2>
+							<p>بسیار راحت است فقط کافیست :</p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="feature-right animate-box" data-animate-effect="fadeInright">
+							<span class="icon">
+								<i class="icon-check"></i>
+							</span>
+							<div class="feature-copy">
+								<h3> در سایت ثبت نام کنید </h3>
+								<p>برای ثبت نام به اینجا بروید و اطلاعات خود را وارد نمایید</p>
+							</div>
+						</div>
+						<div class="feature-right animate-box" data-animate-effect="fadeInright">
+							<span class="icon">
+								<i class="icon-check"></i>
+							</span>
+							<div class="feature-copy">
+								<h3> منتظر تایید مدیر سامانه باشید </h3>
+								<p>بعد از ثبت نام، مدیر سیستم اطلاعات شما را بررسی و تایید می نماید</p>
+							</div>
+						</div>
+						<div class="feature-right animate-box" data-animate-effect="fadeInright">
+							<span class="icon">
+								<i class="icon-check"></i>
+							</span>
+							<div class="feature-copy">
+								<h3>  نرم افزار را دانلود کنید.مطابق فیلم آموزشی ازآن استفاده نمایید</h3>
+								<p>برای دانلود نرم افزار به اینجا بروید</p>
+							</div>
+						</div>
+					</div>
+					<!--start video -->
+					<div class="col-md-6">
+						<div class="gtco-video gtco-bg" style="background-image: url({% static 'pics/img_1.jpg' %}); ">
+							<a href="#" class="popup-vimeo"><i class="icon-video2"></i></a>
+							<div class="overlay"></div>
+						</div>
+					</div>
+					<!--end video -->
+				</div>
+			</div>
+		</div>
+		<!--end why us -->
+
+
+		{% include 'base/footer.html' %}
+	</div>
+
+	<div class="gototop js-top">
+		<a href="#" class="js-gotop"><i class="icon-arrow-up"></i></a>
+	</div>
+	{% include 'base/js-footer.html' %}
+</body>
+</html>

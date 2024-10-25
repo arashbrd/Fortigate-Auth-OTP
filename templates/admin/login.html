@@ -1,0 +1,60 @@
+<!-- usersmgmnt/templates/admin/login.html -->
+{% extends "admin/login.html" %}
+{% block content %}
+    <div id="loading" style="display:none;">
+        <p style="text-align:center;">در حال بررسی اتصال به فایروال</p>
+        <div class="spinner"></div>
+    </div>
+   
+
+    <div id="login-form">
+        {{ block.super }}     
+       
+        
+    </div>
+   
+  <!-- اضافه کردن نسخه برنامه خارج از فرم ورود -->
+  <div style="text-align: center; margin-top: 250px; position: relative;">
+    <p style="position: absolute; bottom: 10; width: 100%; text-align: center;">نسخه برنامه: {{ app_version }}</p>
+  </div>
+   
+
+    <script>
+        document.querySelector('form').onsubmit = function(event) {
+            event.preventDefault();  // Prevent form submission
+            document.getElementById('login-form').style.display = 'none';  // Hide login form
+            document.getElementById('loading').style.display = 'block';  // Show spinner
+
+            // Send credentials to the backend for FortiGate connection
+            fetch('{% url "fortigate_connect" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'username': document.getElementById('id_username').value,
+                    'password': document.getElementById('id_password').value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // FortiGate connection is successful, redirect to admin panel
+                    window.location.href = "{% url 'admin:index' %}";
+                } else {
+                    document.getElementById('loading').style.display = 'none';  // Hide spinner
+                    document.getElementById('login-form').style.display = 'block';  // Show login form again
+                    alert("Error: " + data.message);  // Show error message
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+                document.getElementById('loading').style.display = 'none';  // Hide spinner
+                document.getElementById('login-form').style.display = 'block';  // Show login form again
+                alert("An unexpected error occurred.");
+            });
+        };
+    </script>
+  
+{% endblock %}

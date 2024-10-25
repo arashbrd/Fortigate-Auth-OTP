@@ -1,0 +1,104 @@
+
+	{%load static %}
+    <!-- Animate.css -->
+	<link rel="stylesheet" href="{% static 'css/animate.css' %}">
+	<!-- Icomoon Icon Fonts-->
+	<link rel="stylesheet" href="{% static 'css/icomoon.css' %}">
+	<!-- Bootstrap  -->
+	<link rel="stylesheet" href="{% static 'css/bootstrap-rtl.css' %}">
+	<!-- Magnific Popup -->
+	<link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
+	<!-- Owl Carousel  -->
+	<link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+	<!-- Theme style  -->
+	<link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+	<!-- Custom CSS -->
+	
+	<style>
+		/* تغییر رنگ پس زمینه بدنه */
+		body {
+			background-color: #f8f8f8; /* رنگ ملایم برای بدنه */
+		}
+		/* تغییر رنگ پس زمینه فوتر */
+		#gtco-footer {
+			background-color: #2c3e50; /* رنگ تیره برای فوتر */
+			color: white; /* تغییر رنگ نوشته‌ها به سفید */
+			background-color: #333; /* رنگ پس‌زمینه */
+    		color: white; /* رنگ متن */
+    		min-height: 300px; /* تنظیم ارتفاع به 250 پیکسل */
+    		padding: 20px 0;
+			
+		}
+		#gtco-footer a {
+			color: #ecf0f1; /* تغییر رنگ لینک‌های فوتر */
+		}
+		#gtco-footer a:hover {
+			color: #3498db; /* رنگ لینک‌ها هنگام هاور */
+		}
+		/* تغییر رنگ دکمه بازگشت به بالا */
+		.gototop a {
+			background-color: #3498db;
+			color: white;
+		}
+		.container-limited {
+			max-width: 900px; /* عرض دلخواه، مثلاً 1200px */
+			margin: 0 auto;    /* برای مرکز کردن محتوا */
+			padding: 0 15px;   /* فاصله از دو طرف */
+		}
+		.gtco-video .overlay1 {
+			margin:4rem 3rem;
+			position: absolute;
+			top: 0;
+			right: 0;
+			left: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.5);
+			-webkit-transition: 0.5s;
+			-o-transition: 0.5s;
+			transition: 0.5s;
+		}
+		.gtco-video:hover .overlay1 {
+			background: rgba(0, 0, 0, 0.7);
+		}
+		
+		
+			.icon {
+				margin-left: 10px;
+				font-size: 20px;
+				transition: color 0.5s ease, transform 0.5s ease;
+			}
+	
+			.waiting {
+				color: gray;
+			}
+	
+			.success {
+				color: green;
+				transform: scale(1.2);
+			}
+	
+			.fail {
+				color: red;
+				transform: scale(1.2);
+			}
+	
+			@keyframes bounce {
+				0%, 100% {
+					transform: translateY(0);
+				}
+				50% {
+					transform: translateY(-10px);
+				}
+			}
+	
+			.bounce {
+				animation: bounce 1s ease-in-out;
+			}
+	
+			.error-message {
+				color: red;
+				margin-top: 10px;
+			}
+			
+	</style>

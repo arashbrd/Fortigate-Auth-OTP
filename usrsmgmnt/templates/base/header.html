@@ -1,0 +1,21 @@
+{% load static %}
+<!--start header -->
+<header id="gtco-header" class="gtco-cover" role="banner" style="background-image:url({% static 'pics/img_bg_2.jpg' %});">
+    <div class="gtco-container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2 text-center">
+                <div class="display-t">
+                    <div class="display-tc animate-box" data-animate-effect="fadeIn">
+                        <h1>گذرنگار</h1>
+                        <h2>گذرنگار، سامانه مدیریت کاربران و احراز هویت دو مرحله‌ای متصل به فایروال سازمان، راهکاری نوین برای مدیریت و امنیت کاربران است.</h2>
+                        {% if show_reg_button %}
+                        <p><a href="{% url 'register_user' %}" class="btn btn-default">در سایت ثبت نام کنید</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- </div> -->
+<!--end header -->

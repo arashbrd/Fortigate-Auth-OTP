@@ -1,0 +1,27 @@
+<!--start navbar and menu -->
+<nav class="gtco-nav" role="navigation">
+    <div class="gtco-container">
+        <div class="row">
+            <div class="col-xs-2">
+                <div id="gtco-logo"><a href="{% url 'home' %}">گذرنگار</a></div>
+            </div>
+            <div class="col-xs-8 text-center menu-1">
+                <ul>
+                    <li class="{% if current_path == '/' %}active{% endif %}"><a href="{% url 'home' %}">صفحه نخست</a></li>
+                    <li class="{% if current_path == '/edu/' %}active{% endif %}"><a href="{% url 'education' %}">آموزش</a></li>					
+                    <li class="{% if current_path == '/register/' %}active{% endif %}"><a href="{% url 'register_user' %}">فرم ثبت </a></li>					
+                    <li class="{% if current_path == '/download/' %}active{% endif %}"><a href="{% url 'download_software' %}">دانلود نرم افزار</a></li>					
+                    <li class="{% if current_path == '/about/' %}active{% endif %}"><a href="{% url 'about_us' %}">درباره ما</a></li>
+                </ul>
+            </div>
+            {% if show_reg_button %}
+            <div class="col-xs-2 text-left hidden-xs menu-2">
+                <ul>
+                    <li class="btn-cta"><a href="{% url 'admin:index' %}"><span>ورود ادمین</span></a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+<!--end navbar and menu -->

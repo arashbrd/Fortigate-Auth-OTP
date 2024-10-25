@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title> گذرنگار---احراز هویت دو مرحله ای فایروال فورتی گیت</title>
+		{%include 'base/css-header.html' %}
+</head>
+<body>
+	<div class="gtco-loader"></div>
+	    <div id="page" >
+		
+		    {% include 'base/nav.html' %}
+		
+            {% include 'base/header.html' %}
+
+        </div>
+        <div  class="text-center" style="margin-top: 3rem; margin-bottom: 3rem;" >
+            {%block content %}
+
+            {% endblock %}
+
+        </div>
+            {% include 'base/footer.html' %}
+
+    <div class="gototop js-top">
+        <a href="#" class="js-gotop"><i class="icon-arrow-up"></i></a>
+    </div>
+{% include 'base/js-footer.html' %}
+{% block extra_js %}
+	
+{% endblock %}
+
+</body>
+</html>
