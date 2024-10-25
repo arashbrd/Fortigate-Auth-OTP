@@ -61,11 +61,14 @@ def get_user_group_names():
         # Extract the "results" list and retrieve only the "name" field from each entry
         groups = response.json().get("results", [])
         group_names = [group['name'] for group in groups]
-        return group_names
+        group_ids = [group['id'] for group in groups]
+        return group_names,group_ids
     else:
         return f"Error {response.status_code}: {response.text}"
 
 # Main script
 if __name__ == "__main__":
-    group_names = get_user_group_names()
+    group_names,group_ids = get_user_group_names()
     print("User Group Names:", group_names)
+    print("+++++++++++++++")
+    print("User Group Names:", group_ids)

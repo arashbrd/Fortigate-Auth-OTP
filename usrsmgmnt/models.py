@@ -23,7 +23,7 @@ class LinFortiUsers(AbstractUser):
 
 
 class FortiGateUserGroup(models.Model):
-    fortigate_id = models.CharField(max_length=100, unique=True, verbose_name="شناسه FortiGate")
+    fortigate_id = models.IntegerField( unique=True, verbose_name="شناسه FortiGate")
     fortigate_name = models.CharField(max_length=100, unique=True, verbose_name="نام گروه")
     
     def __str__(self):

@@ -72,7 +72,7 @@ class CustomUserChangeForm(forms.ModelForm):
             self.fields['user_permissions'].widget = forms.HiddenInput()
 
 class LinFortiUserAdmin(BaseUserAdmin):
-    list_display = ('first_name', 'last_name','national_code','email','phone_number','is_active')
+    list_display = ('first_name', 'last_name','national_code','email','phone_number','is_active','user_group')
     
     # قابلیت جستجو در این فیلدها
     search_fields = ('username', 'email', 'first_name', 'last_name','phone_number')
@@ -100,14 +100,14 @@ class LinFortiUserAdmin(BaseUserAdmin):
     # حذف بخش permissions از فرم ادمین
     fieldsets = (
         (None, {'fields': ('username',)}),
-        ('اطلاعات شخصی', {'fields': ('first_name', 'last_name', 'email','national_code','phone_number')}),
+        ('اطلاعات شخصی', {'fields': ('first_name', 'last_name', 'email','national_code','phone_number','user_group')}),
         ('وضعیت', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         # ('تاریخ‌های مهم', {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
     (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'national_code', 'phone_number','email')
+            'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'national_code', 'phone_number','email','user_group')
         }
         ),
     )
