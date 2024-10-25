@@ -14,6 +14,8 @@ from .forms import UserRegistrationForm
 from utils.emailProc import process_email
 from django.contrib import messages
 import core.settings
+from django.shortcuts import redirect
+from django.contrib.admin.views.decorators import staff_member_required
 
 def home(request):
     return render(request, 'usrsmgmnt/home.html' ,{'show_reg_button': True})
@@ -192,3 +194,23 @@ def run_step3_script():
     if response.status_code == 200:
         return True
     return False
+
+
+@staff_member_required
+def forti_user_group(request):
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    load_dotenv()
+    api_key = os.getenv('FORTIGATE_API_KEY')
+    fortigate_ip = os.getenv('FORTIGATE_IP')
+    api_url = f'https://{fortigate_ip}/api/v2/cmdb/user/group'  # Example FortiGate URL for fetching user groups
+
+    headers = {"Authorization": f"Bearer {api_key}"}
+    if request.method == 'POST':
+        from utils.update_forti_user_groups import update_forti_user_groups
+        out,message=update_forti_user_groups(api_url,headers)
+        if out:        
+            messages.success(request, "به روز رسانی با موفقیت انجام شد")
+        else:
+             messages.error(request,message )
+
+    return redirect('/admin/')

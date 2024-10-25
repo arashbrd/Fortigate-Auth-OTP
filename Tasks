@@ -2,3 +2,4 @@ Google Recapcha get Keys
 edit visudo (maybe needs www-data )
 DNS settings for sending email
 SMS Gateway Setting
+run cron job   0 3 * * * /path/to/your/venv/bin/python /path/to/your/manage.py fetch_fortigate_groups.py

@@ -14,4 +14,10 @@
             {% endfor %}
         </ul>
     </div>
+    {% if request.user.is_superuser %}
+    <form action="{% url 'admin_run_forti-user-group' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="button" style="background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer;">به روز رسانی گروه کاربری </button>
+    </form>
+    {% endif %}
 {% endblock %}
