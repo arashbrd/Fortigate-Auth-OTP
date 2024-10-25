@@ -100,7 +100,7 @@ class LinFortiUserAdmin(BaseUserAdmin):
     # حذف بخش permissions از فرم ادمین
     fieldsets = (
         (None, {'fields': ('username',)}),
-        ('اطلاعات شخصی', {'fields': ('first_name', 'last_name', 'email','phone_number')}),
+        ('اطلاعات شخصی', {'fields': ('first_name', 'last_name', 'email','national_code','phone_number')}),
         ('وضعیت', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         # ('تاریخ‌های مهم', {'fields': ('last_login', 'date_joined')}),
     )
