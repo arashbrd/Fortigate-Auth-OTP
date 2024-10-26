@@ -1,7 +1,4 @@
-# # forms.py
-# from django import forms
-# from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-# from .models import LinFortiUsers
+
 
 # class LinFortiUsersCreationForm(UserCreationForm):
 #     class Meta(UserCreationForm.Meta):
@@ -33,30 +30,7 @@ class UserRegistrationForm(forms.ModelForm):
     class Meta:
         model = LinFortiUsers
         fields = ['first_name', 'last_name', 'national_code', 'email', 'phone_number']
-        
-    # # You can add custom validation if needed
-    # def clean_national_code(self):
-    #     value = self.cleaned_data.get('national_code')
-    #     print (f'value of national_code is {value}')
-    #     if not re.match(r'^[0-9]{10}$', value):
-    #         raise ValidationError('کد ملی باید ۱۰ رقم باشد.', params={'value': value})
-
-    #   # تبدیل کد ملی به لیست از ارقام
-    #     national_code = list(map(int, value))
-
-    #  # بررسی یکنواخت بودن تمام ارقام (همه ارقام نباید مشابه باشند)
-    #     if all(x == national_code[0] for x in national_code):
-    #         raise ValidationError('کد ملی وارد شده معتبر نیست.', params={'value': value})
-
-    # # محاسبه رقم کنترلی
-    #     check = national_code[-1]
-    #     s = sum([national_code[i] * (10 - i) for i in range(9)]) % 11
-
-    # # بررسی الگوریتم کنترلی
-    #     if (s < 2 and check != s) or (s >= 2 and check + s != 11):
-    #         raise ValidationError('کد ملی وارد شده معتبر نیست.', params={'value': value})
-    #     print('NATIONAL CODE IS ACCEPTED BY FORM')
-    #     return national_code
+    
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
 

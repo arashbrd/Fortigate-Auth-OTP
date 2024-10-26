@@ -7,9 +7,17 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 # from django.contrib.auth.models import Group
-from .models import LinFortiUsers
+from .models import LinFortiUsers,LogEntry
+
 # from django.contrib import messages
 from django import forms
+
+import logging
+
+from django.utils import timezone
+from django.utils.html import format_html
+
+from core.settings import DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE
 
 
 # Function to fetch FortiGate specs
@@ -115,3 +123,67 @@ class LinFortiUserAdmin(BaseUserAdmin):
 
 # admin.site.unregister(LinFortiUsers)
 admin.site.register(LinFortiUsers, LinFortiUserAdmin)
+
+
+
+# # LogEntry model admin
+# class LogEntryAdmin(admin.ModelAdmin):
+#     list_display = ('level', 'timestamp', 'module', 'function', 'message')
+#     list_filter = ('level', 'timestamp')
+#     search_fields = ('message', 'module', 'function')
+#     date_hierarchy = 'timestamp'
+
+#     # غیر فعال کردن دکمه اضافه کردن
+#     def has_add_permission(self, request):
+#         return False
+
+#     # اختیاری: غیر فعال کردن دکمه‌های حذف و ویرایش
+#     def has_change_permission(self, request, obj=None):
+#         return False
+
+#     def has_delete_permission(self, request, obj=None):
+#         return False
+
+# admin.site.register(LogEntry, LogEntryAdmin)
+
+
+
+
+
+
+class LogEntryAdmin(admin.ModelAdmin):
+    list_display = ('colored_msg', 'create_datetime_format')
+    list_display_links = ('colored_msg',)
+    list_filter = ('level', 'create_datetime')
+    list_per_page = DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE
+
+    def colored_msg(self, instance):
+        if instance.level in [logging.NOTSET, logging.INFO]:
+            color = 'green'
+        elif instance.level in [logging.WARNING, logging.DEBUG]:
+            color = 'orange'
+        else:
+            color = 'red'
+        return format_html('<span style="color: {color};">{msg}</span>', color=color, msg=instance.msg)
+
+    colored_msg.short_description = 'متن لاگ'
+
+    # def traceback(self, instance):
+    #     return format_html('<pre><code>{content}</code></pre>', content=instance.trace if instance.trace else '')
+
+    def create_datetime_format(self, instance):
+        return timezone.localtime(instance.create_datetime).strftime('%Y-%m-%d %X')
+
+    create_datetime_format.short_description = 'ایجاد شده در:'
+    def has_add_permission(self, request):
+        return False
+
+    # اختیاری: غیر فعال کردن دکمه‌های حذف و ویرایش
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+admin.site.register(LogEntry, LogEntryAdmin)

@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usrsmgmnt',
     'django_recaptcha',
+    #'django_db_logger',
+    'django_jalali',
     
 ]
 
@@ -154,4 +156,32 @@ USE_TZ = True
 RECAPTCHA_PUBLIC_KEY = '6LcmOGUqAAAAAGh431eYmoup5IFHvUipgHwX6pEX'
 RECAPTCHA_PRIVATE_KEY = '6LcmOGUqAAAAAOfVCD8LL335UH2_aoMaTilD09q8'
 
+#'%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s--%(module)s-- %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
+    },
+    'handlers': {
+        'db_handler': {
+            'level': 'DEBUG',
+            'class': 'usrsmgmnt.handlers.DatabaseLogHandler',
+            'formatter': 'verbose'
+        }
+    },
+    'loggers': {
+        'db': {
+            'handlers': ['db_handler'],
+            'level': 'DEBUG'
+        }
+    }
+}
 
+DJANGO_DB_LOGGER_ENABLE_FORMATTER = True
+DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE = int(os.getenv('DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE', 30))

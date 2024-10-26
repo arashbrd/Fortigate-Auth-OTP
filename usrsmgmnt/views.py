@@ -16,7 +16,11 @@ from django.contrib import messages
 import core.settings
 from django.shortcuts import redirect
 from django.contrib.admin.views.decorators import staff_member_required
+import logging
 
+
+
+logger =  logging.getLogger('db')
 # def home(request):
 #     return render(request, 'usrsmgmnt/home.html' ,{'show_reg_button': True})
 
@@ -112,6 +116,7 @@ def connect_fortigate(request):
 
 
 def home_view(request):
+    
     return render(request, 'usrsmgmnt/index.html',{'show_reg_button': True})
 def download(request):
     return render(request, 'usrsmgmnt/download-software.html',{'show_reg_button': False})

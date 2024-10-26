@@ -1,7 +1,10 @@
 # models.py
+import logging
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from utils.validators import validate_linux_username,validate_national_code
+from utils.others.validators import validate_linux_username,validate_national_code
+from django_jalali.db import models as jmodels
+
 
 class LinFortiUsers(AbstractUser):
     username = models.CharField(
@@ -28,3 +31,33 @@ class FortiGateUserGroup(models.Model):
     
     def __str__(self):
         return self.fortigate_name
+
+
+        
+
+LOG_LEVELS = (
+    (logging.NOTSET, 'NotSet'),
+    (logging.INFO, 'Info'),
+    (logging.WARNING, 'Warning'),
+    (logging.DEBUG, 'Debug'),
+    (logging.ERROR, 'Error'),
+    (logging.FATAL, 'Fatal'),
+)
+
+
+class LogEntry(models.Model):
+    logger_name = models.CharField(max_length=100)
+    level = models.PositiveSmallIntegerField(choices=LOG_LEVELS, default=logging.ERROR, db_index=True,verbose_name='سطح')
+    msg = models.TextField(verbose_name='متن لاگ')
+    trace = models.TextField(blank=True, null=True)
+    create_datetime = jmodels.jDateTimeField(auto_now_add=True, verbose_name='تاریخ')
+    module = models.CharField(max_length=255)
+    function = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.msg
+
+    class Meta:
+        verbose_name = " لاگ"
+        verbose_name_plural = " لاگ‌ها"
+        ordering = ('-create_datetime',)
