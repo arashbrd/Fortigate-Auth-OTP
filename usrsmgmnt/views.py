@@ -1,11 +1,11 @@
+import time
+import json
+import os
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
 from dotenv import load_dotenv
-import time
-import json
-import os
 import urllib3
 from utils.sync_user_group import sync_user_groups
 from django.contrib.auth import login
@@ -17,43 +17,35 @@ import core.settings
 from django.shortcuts import redirect
 from django.contrib.admin.views.decorators import staff_member_required
 
-def home(request):
-    return render(request, 'usrsmgmnt/home.html' ,{'show_reg_button': True})
+# def home(request):
+#     return render(request, 'usrsmgmnt/home.html' ,{'show_reg_button': True})
 
     
 def thank_you(request):
+    if not request.session.get('from_registration'):
+        return redirect('register_user')
+    del request.session['from_registration']
     return render(request, 'usrsmgmnt/thank_you.html',{'show_reg_button': False})
 
-
-# def register_user(request):
-#     if request.method == 'POST':
-#         form = UserRegistrationForm(request.POST)
-#         if form.is_valid():
-#             # Save the user details
-#             form.save()
-#             return redirect('thank_you')  # Redirect to the thank-you page
-#     else:
-#         form = UserRegistrationForm()
-
-#     return render(request, 'usrsmgmnt/register.html', {'form': form})
-# views.py
-
-
 def register_user(request):
-    try:
-    
+    try:    
         if request.method == 'POST':
             form = UserRegistrationForm(request.POST)
+            # print('BEFORE FORM VALID*******')
+            # print(f'request.POST={request.POST}')
             if form.is_valid():
                 user = form.save(commit=False)
                 user.username = process_email(user.email)  # استفاده از ایمیل به عنوان نام کاربری
                 user.set_password(core.settings.FIX_PASSWORD)
                 user.is_active = False 
                 user.save()  # ذخیره کاربر
+                request.session['from_registration'] = True
                 return redirect('thank_you')  # هدایت به صفحه تشکر
             else:
                 errors = form.errors.as_text()
                 messages.error(request, errors)
+                return render(request, 'usrsmgmnt/register.html', {'form': form,'show_reg_button': False})
+
         else:
             form = UserRegistrationForm()
         
@@ -66,7 +58,7 @@ def register_user(request):
 
         # traceback.print_exc()
             messages.error(request, f'خطا: {error_message}')
-        return render(request, 'usrsmgmnt/register.html.', {'form': form,'show_reg_button': False})
+        return render(request, 'usrsmgmnt/register.html', {'form': form,'show_reg_button': False})
         
 
 

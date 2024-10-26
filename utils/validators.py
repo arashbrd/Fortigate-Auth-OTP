@@ -1,28 +1,17 @@
 
 import re
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
+
 
 def validate_national_code(value):
-    # بررسی طول و الگوی کد ملی (باید ۱۰ رقم باشد)
-    if not re.match(r'^\d{10}$', value):
-        raise ValidationError(_('کد ملی باید ۱۰ رقم باشد.'), params={'value': value})
-
-    # تبدیل کد ملی به لیست از ارقام
-    national_code = list(map(int, value))
-
-    # بررسی یکنواخت بودن تمام ارقام (همه ارقام نباید مشابه باشند)
-    if all(x == national_code[0] for x in national_code):
-        raise ValidationError(_('کد ملی وارد شده معتبر نیست.'), params={'value': value})
-
-    # محاسبه رقم کنترلی
-    check = national_code[-1]
-    s = sum([national_code[i] * (10 - i) for i in range(9)]) % 11
-
-    # بررسی الگوریتم کنترلی
-    if (s < 2 and check != s) or (s >= 2 and check + s != 11):
-        raise ValidationError(_('کد ملی وارد شده معتبر نیست.'), params={'value': value})
-
+    if len(value) != 10 or not value.isdigit():
+        raise ValidationError("کد ملی باید شامل 10 رقم باشد.")
+    
+    # الگوریتم اعتبارسنجی کد ملی
+    check = int(value[9])
+    s = sum(int(value[x]) * (10 - x) for x in range(9)) % 11
+    if not ((s < 2 and check == s) or (s >= 2 and check + s == 11)):
+        raise ValidationError("کد ملی نامعتبر است.")
 
 def validate_linux_username(username):
     # Check length (1 to 32 characters)

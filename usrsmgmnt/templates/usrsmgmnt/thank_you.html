@@ -3,16 +3,8 @@
 
 <!-- {% block title %}Thank You{% endblock %} -->
 
-{% block content %}
-
-
-    
-
+{% block content %}    
         <h1 >با تشکر از ثبت نام شما</h1>
-        <p>پی از تایید ادمین از طریق  پیامک با سرشماره {{sms_number}} به شما اطلاع داده خواهد شد. </p>
-        <a href="{% url 'home' %}" class="btn btn-primary">بازگشت به صفحه اصلی</a>
-    
-    
-
-
+        <p>پس از تایید ادمین از طریق  پیامک با سرشماره {{sms_number}} به شما اطلاع داده خواهد شد. </p>
+        <a href="{% url 'home' %}" class="btn btn-primary">بازگشت به صفحه اصلی</a>    
 {% endblock %}

@@ -25,7 +25,7 @@ def update_forti_user_groups(api_url,headers):
                     group.delete()
             return True , "به روز رسانی با موفقیت انجام شد"           
             
-        else
+        else:
             return False ,f"Error {response.status_code}: {response.text}"      
        
     except requests.RequestException as e:
