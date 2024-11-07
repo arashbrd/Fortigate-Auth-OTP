@@ -1,26 +1,51 @@
-Google Recapcha get Keys
-edit visudo (maybe needs www-data )
-DNS settings for sending email
-SMS Gateway Setting
-run cron job   0 3 * * * /path/to/your/venv/bin/python /path/to/your/manage.py fetch_fortigate_groups.py
+# Google Recapcha get Keys
+# edit visudo (maybe needs www-data )
+# DNS settings for sending email
+# SMS Gateway Setting
+# run cron job   0 3 * * * /path/to/your/venv/bin/python /path/to/your/manage.py fetch_fortigate_groups.py
+#access linux to SMS Web Server
 
-
-add in register.html
- <div class="form-group">
+# add in register.html
+#  <div class="form-group">
                     
-                    {{ form.captcha|add_class:"form-control" }}
-</div>
+#                     {{ form.captcha|add_class:"form-control" }}
+# </div>
 
 
 
-sudo apt update
-sudo apt install sqlite3
+# sudo apt update
+# sudo apt install sqlite3
 
 
-can add log by:
+# can add log by:
+# import logging
+# logger =  logging.getLogger('db')
 # logger.exception('This is a Exception message.')
 # logger.debug('This is a debug message.')
 # logger.info('This is an info message.')
 # logger.warning('This is a warning message.')
 # logger.error('This is an error message.')
 # logger.critical('This is a critical message.')
+'''
+
+ثبت نام شما تایید شد
+نام کاربری:{0}
+کلمه عبور :{1}
+جهت نصب نرم افزار و آموزشهای بیشتر به سایت https://otp.fums.ac.ir 
+مراجعه فرمایید.
+مدیریت آمار و فناوری اطلاعات دانشگاه علوم پزشکی فسا
+'''
+'''
+جناب آقای/سرکار خانم {0} ثبت نام شما در سایت جهت دسترسی به کد دو مرحله ای احراز هویت با موفقیت انجام شد. در صورت تایید مدیر سامانه، اطلاعات کاربری شما از طریق همین سرشماره به شما اطلاع داده خواهد شد. با تشکر .مدیریت آمار و فناوری اطلاعات دانشگاه علوم پزشکی فسا. https://otp.fums.ac.ir 
+'''
+
+'''
+ارسال تاییدیه ثبت نام264907 {0}{1}
+
+'''
+'''
+   ثبت نام در سایت 264902 {0}
+'''
+'''
+     کد تایید دو مرحله ای سامانه احراز هویت  213796 {0}
+'''

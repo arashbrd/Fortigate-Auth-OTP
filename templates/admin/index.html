@@ -14,10 +14,42 @@
             {% endfor %}
         </ul>
     </div>
+    
     {% if request.user.is_superuser %}
     <form action="{% url 'admin_run_forti-user-group' %}" method="post" style="display:inline;">
         {% csrf_token %}
         <button type="submit" class="button" style="background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer;">به روز رسانی گروه کاربری </button>
     </form>
     {% endif %}
+    
+    <div class="module" id="sms-panel">
+        
+        <h2>اعتبار پنل پیامکی</h2>        
+        
+        <ul>
+            <li>
+                <strong>نام پنل:{{panel_name}}</strong>
+
+            </li>
+           
+
+            {% if sms_panel|add:"-10" > 0 %}
+        <li><strong> تعداد پیامک:</strong> {{ sms_panel }} </li>
+        {% else %}
+        <div >
+          
+            <li  ><strong > تعداد پیامک:</strong> {{ sms_panel }} 
+                <br>
+            <strong > 
+                <a href="{{panel_web_address}}" target="_blank" rel="external">به پنل مراجعه کنید</a> 
+                </strong>  
+            </li>
+        </div>
+
+        {% endif %}
+            
+            
+        </ul>
+       
+    </div>
 {% endblock %}

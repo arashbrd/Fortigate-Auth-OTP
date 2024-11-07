@@ -1,21 +1,13 @@
 import logging
-
-
 from core.settings import DJANGO_DB_LOGGER_ENABLE_FORMATTER
-
-
 db_default_formatter = logging.Formatter()
 
-
 class DatabaseLogHandler(logging.Handler):
-    def emit(self, record):
+    def emit(self, record):        
         from .models import LogEntry
-        
         trace = None
-
         if record.exc_info:
             trace = db_default_formatter.formatException(record.exc_info)
-
         if DJANGO_DB_LOGGER_ENABLE_FORMATTER:
             msg = self.format(record)
         else:

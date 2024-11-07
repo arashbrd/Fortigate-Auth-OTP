@@ -1,7 +1,6 @@
-# usersmgmnt/urls.py
 from django.urls import path
-from .views import connect_fortigate  
-from .views import register_user, thank_you,home_view,download,about_us,education,steps_page,run_steps,forti_user_group
+from .views import connect_fortigate,register_user, thank_you,home_view,download,about_us
+from .views import education,steps_page,run_steps,forti_user_group
 
 
 urlpatterns = [

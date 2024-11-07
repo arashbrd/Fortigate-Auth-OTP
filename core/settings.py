@@ -21,6 +21,12 @@ FIX_PASSWORD = os.getenv('FIX_PASSWORD', 'FixedPassword123')
 ORG_NAME = os.getenv('ORG_NAME', 'محل قرار گرفتن نام سازمان') 
 ORG_WEBSITE = os.getenv('ORG_WEBSITE', '#') 
 SMS_NUMBER = os.getenv('SMS_NUMBER', ' ') 
+WEBSERVER_IP = os.getenv('WEBSERVER_IP', '127.0.0.1') 
+LEAST_CREDIT = os.getenv('LEAST_CREDIT', '500000') 
+MELLI_PAYAMAK_API_KEY = os.getenv('MELLI_PAYAMAK_API_KEY', 'abc') 
+LEAST_CREDIT_NUM = os.getenv('LEAST_CREDIT_NUM', '20') 
+PANEL_WEB_ADDRESS = os.getenv('PANEL_WEB_ADDRESS', '#') 
+PANEL_NAME = os.getenv('PANEL_NAME', '---') 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,7 +41,7 @@ SECRET_KEY = 'django-insecure-5&ajgrnic0b3n=&(1(bj7kaqum_++l9!uv*0js1w&vk3el_1)h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.110.149']
+ALLOWED_HOSTS = [WEBSERVER_IP]
 
 
 # Application definition

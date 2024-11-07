@@ -1,22 +1,23 @@
+import os
 import time
 import json
-import os
-import requests
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate
-from dotenv import load_dotenv
+import logging
 import urllib3
-from utils.sync_user_group import sync_user_groups
+import requests
+import core.settings
+from dotenv import load_dotenv
+from utils.others import utils
+from django.contrib import messages
+from django.http import JsonResponse
 from django.contrib.auth import login
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from .forms import UserRegistrationForm
 from utils.emailProc import process_email
-from django.contrib import messages
-import core.settings
-from django.shortcuts import redirect
+from django.contrib.auth import authenticate
+from django.shortcuts import render, redirect
+from utils.sync_user_group import sync_user_groups
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
-import logging
 
 
 
@@ -28,7 +29,7 @@ logger =  logging.getLogger('db')
 def thank_you(request):
     if not request.session.get('from_registration'):
         return redirect('register_user')
-    del request.session['from_registration']
+    del request.session['from_registration']       
     return render(request, 'usrsmgmnt/thank_you.html',{'show_reg_button': False})
 
 def register_user(request):
@@ -43,7 +44,14 @@ def register_user(request):
                 user.set_password(core.settings.FIX_PASSWORD)
                 user.is_active = False 
                 user.save()  # ذخیره کاربر
+                logger.info(f'کاربر با نام {user.first_name}{user.last_name}به شماره ملی {user.national_code} و شماره موبایل {user.mobile_phone}در سایت ثبت نام کرد')
                 request.session['from_registration'] = True
+
+                #?#TODO:SEND SMS()
+                # if send_Sms():
+                #     logger.info(f'ارسال شد پیامک برای کاربر "{متن پیامک}"')
+                # else:
+                #     logger.error(f'پیامک ارسال نشد!!!')
                 return redirect('thank_you')  # هدایت به صفحه تشکر
             else:
                 errors = form.errors.as_text()
@@ -58,6 +66,8 @@ def register_user(request):
         error_message = str(e)
         if 'UNIQUE constraint' in str(e):
             messages.error(request, 'این ایمیل قبلاً ثبت شده است. لطفاً از ایمیل دیگری استفاده کنید.')
+            logger.exception(error_message)
+
         else:
 
         # traceback.print_exc()
@@ -116,6 +126,9 @@ def connect_fortigate(request):
 
 
 def home_view(request):
+    user_ip = utils.get_client_ip(request)
+
+    logger.info(f'a user visit site with IP:{user_ip}')
     
     return render(request, 'usrsmgmnt/index.html',{'show_reg_button': True})
 def download(request):

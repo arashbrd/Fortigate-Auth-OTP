@@ -1,51 +1,18 @@
-import os
-import requests
-import urllib3
-from dotenv import load_dotenv
-from django.contrib import admin
-# from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-# from django.contrib.auth.models import Group
-from .models import LinFortiUsers,LogEntry
-
-# from django.contrib import messages
-from django import forms
-
 import logging
-
+from django import forms
+from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
-
+from .models import LinFortiUsers,LogEntry
+from django.contrib.auth.models import User
+from utils.forti.forti_utils import get_fortigate_specs
+from utils.forti.forti_utils import check_all_things_is_ok
 from core.settings import DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from utils.sms.retrieve_credit import check_sms_panel,retrieve_credit
+from utils.linux.linux_users import create_linux_user,can_create_linux_user
+# from django.contrib import messages
 
-
-# Function to fetch FortiGate specs
-def get_fortigate_specs():
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    load_dotenv()
-    api_key = os.getenv('FORTIGATE_API_KEY')
-    fortigate_ip = os.getenv('FORTIGATE_IP')
-    url = f'https://{fortigate_ip}/api/v2/monitor/system/status'
-    headers = {'Authorization': f'Bearer {api_key}'}
-    
-    response = requests.get(url, headers=headers, verify=False)
-    if response.status_code == 200:
-        data = response.json()
-        return {
-            'model_name': data.get('results')['model_name'],
-            'model': data.get('results')['model'],
-            'model_number': data.get('results')['model_number'],
-            'firmware_version': data.get('version'),
-            'serial': data.get('serial'),
-            'hostname': data.get('results')['hostname'],
-            
-        }
-    return {'model':'Not available',
-            'firmware_version': 'Not available',
-            'uptime': 'Not available',
-            'cpu_usage':'Not available',
-            'memory_usage':'Not available',}
 
 # Custom admin site class
 class CustomAdminSite(admin.AdminSite):
@@ -58,15 +25,18 @@ class CustomAdminSite(admin.AdminSite):
         # print("Index function called")
         extra_context = extra_context or {}
         extra_context['fortigate_specs'] = get_fortigate_specs()  # Add the FortiGate specs here
+        sms_panel_credit=retrieve_credit('option3')
+        try:
+            sms_panel_credit=int(float(sms_panel_credit))
+            extra_context['sms_panel'] = sms_panel_credit   # Add the FortiGate specs here
+        except Exception as e :
+            extra_context['sms_panel'] =sms_panel_credit
         return super().index(request, extra_context=extra_context)
 
 # Instantiate your custom admin site
 admin_site = CustomAdminSite()
 
 admin.site = admin_site
-
-
-
 
 class CustomUserChangeForm(forms.ModelForm):
     class Meta:
@@ -80,6 +50,23 @@ class CustomUserChangeForm(forms.ModelForm):
             self.fields['user_permissions'].widget = forms.HiddenInput()
 
 class LinFortiUserAdmin(BaseUserAdmin):
+    def save_model(self, request, obj, form, change):
+        # Run the custom script
+        if  check_sms_panel(option='option3') and can_create_linux_user(request.user): #TODO  change request.user
+            if create_linux_user():
+                pass
+            else:
+                #LINUX PROBLEM IN CREATING USER
+                pass
+
+            super().save_model(request, obj, form, change)
+            print ("****************CHECK SMS PANEL RUN!!!")
+            # messages.success(request, "The record has been saved successfully!!!!")
+        else:
+            # SMS PANEL NOT WORKING
+            pass
+
+
     list_display = ('first_name', 'last_name','national_code','email','phone_number','is_active','user_group')
     
     # قابلیت جستجو در این فیلدها
@@ -125,34 +112,9 @@ class LinFortiUserAdmin(BaseUserAdmin):
 admin.site.register(LinFortiUsers, LinFortiUserAdmin)
 
 
-
-# # LogEntry model admin
-# class LogEntryAdmin(admin.ModelAdmin):
-#     list_display = ('level', 'timestamp', 'module', 'function', 'message')
-#     list_filter = ('level', 'timestamp')
-#     search_fields = ('message', 'module', 'function')
-#     date_hierarchy = 'timestamp'
-
-#     # غیر فعال کردن دکمه اضافه کردن
-#     def has_add_permission(self, request):
-#         return False
-
-#     # اختیاری: غیر فعال کردن دکمه‌های حذف و ویرایش
-#     def has_change_permission(self, request, obj=None):
-#         return False
-
-#     def has_delete_permission(self, request, obj=None):
-#         return False
-
-# admin.site.register(LogEntry, LogEntryAdmin)
-
-
-
-
-
-
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = ('colored_msg', 'create_datetime_format')
+    search_fields = ('msg', 'create_datetime')
     list_display_links = ('colored_msg',)
     list_filter = ('level', 'create_datetime')
     list_per_page = DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE
