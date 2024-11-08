@@ -27,6 +27,20 @@ class UserRegistrationForm(forms.ModelForm):
     #     private_key = '6LcmOGUqAAAAAOfVCD8LL335UH2_aoMaTilD09q8',
     #     widget=ReCaptchaV3
     #     )
+    first_name = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeypress': 'return restrictToEnglish(event)',
+            'oninput': 'removeNonEnglish(this)'
+        })
+    )
+    last_name = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeypress': 'return restrictToEnglish(event)',
+            'oninput': 'removeNonEnglish(this)'
+        })
+    )
     class Meta:
         model = LinFortiUsers
         fields = ['first_name', 'last_name', 'national_code', 'email', 'phone_number']

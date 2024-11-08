@@ -18,6 +18,20 @@
 	<script src="{% static 'js/magnific-popup-options.js' %}"></script>
 	<!-- Main -->
 	<script  src="{% static 'js/scripts.js' %}"></script>
+	<script>
+		// Function to restrict characters in real-time on keypress
+		function restrictToEnglish(event) {
+			const char = String.fromCharCode(event.keyCode);
+			const regex = /^[A-Za-z\s]*$/;  // Allow alphabetic characters and spaces
+			if (!regex.test(char)) {
+				event.preventDefault();  // Prevent non-English character from being entered
+				return false;
+			}
+			return true;
+		}
 	
-
-	
+		// Function to remove non-English characters if pasted or autofilled
+		function removeNonEnglish(input) {
+			input.value = input.value.replace(/[^A-Za-z\s]/g, '');  // Remove any non-English characters
+		}
+	</script>
