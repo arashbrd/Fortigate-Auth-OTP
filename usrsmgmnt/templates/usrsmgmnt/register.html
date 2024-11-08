@@ -20,16 +20,26 @@
                 </div>
                 <div class="form-group">
                     {{ form.last_name.label_tag }}
-                    {{ form.last_name|add_class:"form-control" }}
+                    <span class="icon-info" data-toggle="tooltip" title="فقط کاراکتر انگلیسی وارد نمایید">
+                        <i class="fas fa-info-circle" style="margin-left: 5px; color: #007bff;"></i>
+                    </span>
+                    {{ form.last_name}}
                 </div>
+                <div class="form-group">
+                    {{ form.farsi_first_name.label_tag }}
+                    {{ form.farsi_first_name|add_class:"form-control" }}
+                </div>
+              
+                <div class="form-group">
+                    {{ form.farsi_last_name.label_tag }}
+                    {{ form.farsi_last_name|add_class:"form-control" }}
+                </div>
+              
                 <div class="form-group">
                     {{ form.national_code.label_tag }}
                     {{ form.national_code|add_class:"form-control" }}
                 </div>
-                <div class="form-group">
-                    {{ form.email.label_tag }}
-                    {{ form.email|add_class:"form-control" }}
-                </div>
+              
                 <div class="form-group">
                     {{ form.phone_number.label_tag }}
                     {{ form.phone_number|add_class:"form-control" }}

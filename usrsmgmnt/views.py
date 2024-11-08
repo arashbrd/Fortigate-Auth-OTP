@@ -40,11 +40,11 @@ def register_user(request):
             # print(f'request.POST={request.POST}')
             if form.is_valid():
                 user = form.save(commit=False)
-                user.username = process_email(user.email)  # استفاده از ایمیل به عنوان نام کاربری
+                user.username = user.last_name.split(' ')[0]+user.national_code[-4:]  
                 user.set_password(core.settings.FIX_PASSWORD)
                 user.is_active = False 
                 user.save()  # ذخیره کاربر
-                logger.info(f'کاربر با نام {user.first_name}{user.last_name}به شماره ملی {user.national_code} و شماره موبایل {user.mobile_phone}در سایت ثبت نام کرد')
+                logger.info(f'کاربر با نام {user.first_name}{user.last_name}به شماره ملی {user.national_code} و شماره موبایل {user.phone_number}در سایت ثبت نام کرد')
                 request.session['from_registration'] = True
 
                 #?#TODO:SEND SMS()

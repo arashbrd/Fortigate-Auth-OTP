@@ -43,7 +43,7 @@ class UserRegistrationForm(forms.ModelForm):
     )
     class Meta:
         model = LinFortiUsers
-        fields = ['first_name', 'last_name', 'national_code', 'email', 'phone_number']
+        fields = ['first_name', 'last_name','farsi_first_name','farsi_last_name', 'national_code', 'phone_number']
     
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
