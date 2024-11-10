@@ -5,20 +5,21 @@ import logging
 import urllib3
 import requests
 import core.settings
-from dotenv import load_dotenv
 from utils.others import utils
+from dotenv import load_dotenv
 from django.contrib import messages
 from django.http import JsonResponse
-from django.contrib.auth import login
 from django.shortcuts import redirect
+from django.contrib.auth import login
 from .forms import UserRegistrationForm
-from utils.emailProc import process_email
 from django.contrib.auth import authenticate
 from django.shortcuts import render, redirect
 from utils.sync_user_group import sync_user_groups
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
-
+from utils.sms.retrieve_credit import check_sms_panel
+from utils.sms.send_sms import send_sms
+from core.settings import MELLI_PAYAMAK_API_KEY
 
 
 logger =  logging.getLogger('db')
@@ -29,8 +30,9 @@ logger =  logging.getLogger('db')
 def thank_you(request):
     if not request.session.get('from_registration'):
         return redirect('register_user')
-    del request.session['from_registration']       
-    return render(request, 'usrsmgmnt/thank_you.html',{'show_reg_button': False})
+    del request.session['from_registration']
+    sms_panel_is_ok = request.session.pop('sms_panel_is_ok', False)
+    return render(request, 'usrsmgmnt/thank_you.html',{'show_reg_button': False,'sms_panel_is_ok':sms_panel_is_ok})
 
 def register_user(request):
     try:    
@@ -44,14 +46,19 @@ def register_user(request):
                 user.set_password(core.settings.FIX_PASSWORD)
                 user.is_active = False 
                 user.save()  # ذخیره کاربر
-                logger.info(f'کاربر با نام {user.first_name}{user.last_name}به شماره ملی {user.national_code} و شماره موبایل {user.phone_number}در سایت ثبت نام کرد')
+                logger.info(f'کاربر با نام {user.first_name} {user.last_name}به شماره ملی {user.national_code} و شماره موبایل {user.phone_number}در سایت ثبت نام کرد')
                 request.session['from_registration'] = True
 
                 #?#TODO:SEND SMS()
-                # if send_Sms():
-                #     logger.info(f'ارسال شد پیامک برای کاربر "{متن پیامک}"')
-                # else:
-                #     logger.error(f'پیامک ارسال نشد!!!')
+                if  check_sms_panel('option3'):
+                    # send_sms('option3','09173303491',264902,'ae33a10a6bf24822b2dbb101038f5279','آرش بردبار')
+                    send_sms('option3',form.cleaned_data['phone_number'],264902,MELLI_PAYAMAK_API_KEY,f'{user.farsi_first_name+' '+user.farsi_last_name}')
+
+                    request.session['sms_panel_is_ok'] = True
+                    logger.info(f'Registration Verification SMS sent to user {form.cleaned_data['first_name']+' '+form.cleaned_data['last_name']} and phone number {form.cleaned_data['phone_number']}')
+                else:
+                    request.session['sms_panel_is_ok'] = False
+                    logger.error(f'پیامک ارسال نشد!!!')
                 return redirect('thank_you')  # هدایت به صفحه تشکر
             else:
                 errors = form.errors.as_text()
@@ -67,9 +74,7 @@ def register_user(request):
         if 'UNIQUE constraint' in str(e):
             messages.error(request, 'این ایمیل قبلاً ثبت شده است. لطفاً از ایمیل دیگری استفاده کنید.')
             logger.exception(error_message)
-
         else:
-
         # traceback.print_exc()
             messages.error(request, f'خطا: {error_message}')
         return render(request, 'usrsmgmnt/register.html', {'form': form,'show_reg_button': False})

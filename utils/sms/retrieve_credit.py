@@ -40,7 +40,7 @@ def melli_payamak_retrieve_credit():
         
         return response.json()['amount']
     except Exception as e:
-        print (response)
+        # print (response)
         print(e)
         logger.exception(f'An Exception eccured when fetching credit from SMS panel:{e} ') 
         return response.json()['status']
