@@ -1,0 +1,2 @@
+#!/bin/bash
+grep -A 1000 postfix /etc/passwd | cut -d: -f1 | tail -n +2

@@ -2,16 +2,19 @@ import logging
 from django import forms
 from django.contrib import admin
 from django.utils import timezone
+from django.contrib import messages
+from utils.sms.send_sms import send_sms
 from django.utils.html import format_html
 from .models import LinFortiUsers,LogEntry
 from django.contrib.auth.models import User
 from utils.forti.forti_utils import get_fortigate_specs
 from utils.forti.forti_utils import check_all_things_is_ok
-from core.settings import DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from utils.sms.retrieve_credit import check_sms_panel,retrieve_credit
-from utils.linux.linux_users import create_linux_user,can_create_linux_user
-# from django.contrib import messages
+from utils.linux.linux_users import create_linux_user,can_create_linux_user,delete_linux_user
+from utils.forti.forti_user import forti_user_exists,forti_can_manage_users,create_forti_user
+from core.settings import DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE,EMAIL_DOMAIN,MELLI_PAYAMAK_API_KEY
+
 
 
 # Custom admin site class
@@ -50,27 +53,71 @@ class CustomUserChangeForm(forms.ModelForm):
             self.fields['user_permissions'].widget = forms.HiddenInput()
 
 class LinFortiUserAdmin(BaseUserAdmin):
+
     def save_model(self, request, obj, form, change):
-        # Run the custom script
-        if  check_sms_panel(option='option3') and can_create_linux_user(request.user): #TODO  change request.user
-            if create_linux_user():
-                pass
-            else:
-                #LINUX PROBLEM IN CREATING USER
-                pass
+        print ('1#############################')
+        usrname=request.POST.get('username')
+        password=request.POST.get('username')[-4:]
+        first_name=request.POST.get('first_name')
+        last_name=request.POST.get('last_name')
+        user_group=[form.cleaned_data.get('user_group').fortigate_name]
+        phone_number=request.POST.get('phone_number')
+        print (f'usergroup is {user_group}')     
+        
+        
+        if user_group!=['']:
+            print ('not changed #############################')
+            if  check_sms_panel(option='option3'):
+                if can_create_linux_user(usrname): 
+                    if forti_can_manage_users() and not forti_user_exists(usrname): #TODO  change request.user
+                        user_data = {
+                        "name": usrname,  # Username for the new user
+                        "passwd": password,  # Set the user's password
+                        "email-to": usrname+'@'+EMAIL_DOMAIN,  # Email address for two-factor authentication
+                        "two-factor": "email",  # Enable email-based two-factor authentication
+                        "status": "enable",  # User account status: enable or disable
+                        "group": user_group,  # Add user to the 'edari-access' group
+                        "auth-concurrent": "disable"  # Disable concurrent authentication
+                        }
+                        print ('check_sms_panel is passed #############################')
+                        if create_linux_user(username=usrname,first_name=first_name,last_name=last_name,phone_number=phone_number):
+                            print ('create_linux_user is passed #############################')
+                            if create_forti_user(user_data):
+                                print ('create_forti_user is passed #############################')
+                                super().save_model(request, obj, form, change)
+                                print ('save model is passed #############################')
+                                send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
+                                print ('send_sms is passed #############################')
+                            else:
+                                delete_linux_user(usrname)
+                                self.message_user(request, "در ساخت یوزر در فایروال مشکلی پیش آمده", level=messages.ERROR)                                
 
-            super().save_model(request, obj, form, change)
-            print ("****************CHECK SMS PANEL RUN!!!")
-            # messages.success(request, "The record has been saved successfully!!!!")
-        else:
-            # SMS PANEL NOT WORKING
-            pass
+                        else:
+                            #LINUX PROBLEM IN CREATING USER
+                            print ('create_linux_user NOT passed #############################')
+                            self.message_user(request, "در ساخت یوزر در سرور لینوکس مشکلی پیش آمده", level=messages.ERROR)                
+                    else:#fORTI
+                        # fORTI NOT WORKING
+                        print ('fORTI NOT passed #############################')
+                        self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد: فایروال ", level=messages.ERROR)
+                else:#linux
+                    # linux NOT WORKING
+                    print ('LINUX NOT passed #############################')
+                    self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:لینوکس  ", level=messages.ERROR)
+                        
+            else:#check_sms_panel
+                # SMS PANEL NOT WORKING
+                print ('check_sms_panel NOT passed #############################')
+                self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:پنل پیامکی ", level=messages.ERROR)               
+            
+        else:#user_group
+            print ('CHANGE IS TRUE #############################')
+            self.message_user(request, "Script failed, object was not saved.", level=messages.ERROR)
 
-
-    list_display = ('first_name', 'last_name','national_code','email','phone_number','is_active','user_group')
+    list_display = ('farsi_first_name','farsi_last_name','first_name', 'last_name','national_code','phone_number','is_active','user_group')
     
     # قابلیت جستجو در این فیلدها
-    search_fields = ('username', 'email', 'first_name', 'last_name','phone_number')
+    search_fields = ('username', 'first_name', 'last_name','phone_number')
 
     # قابلیت فیلتر بر اساس این فیلدها
     list_filter = ('is_staff', 'is_active')
@@ -95,14 +142,14 @@ class LinFortiUserAdmin(BaseUserAdmin):
     # حذف بخش permissions از فرم ادمین
     fieldsets = (
         (None, {'fields': ('username',)}),
-        ('اطلاعات شخصی', {'fields': ('first_name', 'last_name', 'email','national_code','phone_number','user_group')}),
+        ('اطلاعات شخصی', {'fields': ('farsi_first_name','farsi_last_name','first_name', 'last_name','national_code','phone_number','user_group')}),
         ('وضعیت', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         # ('تاریخ‌های مهم', {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
     (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'national_code', 'phone_number','email','user_group')
+            'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'national_code', 'phone_number','user_group')
         }
         ),
     )

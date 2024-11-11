@@ -33,10 +33,10 @@ def melli_payamak_send_sms(to,bodyId,api_key,*args):
     '''
     try:
         data = {'to':to ,'bodyId': bodyId, 'args': args}   
-        print (f'to={to}')    
-        print (f'bodyId={bodyId}')    
-        print (f'api_key={api_key}')    
-        print (f'args={args}')    
+        # print (f'to={to}')    
+        # print (f'bodyId={bodyId}')    
+        # print (f'api_key={api_key}')    
+        # print (f'args={args}')    
           
         
         response = requests.post(f'https://console.melipayamak.com/api/send/shared/{api_key}', json=data)
@@ -49,6 +49,7 @@ def send_sms(flag, *args, **kwargs):
     if flag in functions:
         return functions[flag](*args, **kwargs)
     else:
+
         raise ValueError("Invalid flag value")
 
 # print(send_sms('option1', 5))  # خروجی: 10

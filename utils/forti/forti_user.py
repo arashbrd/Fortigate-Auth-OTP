@@ -17,29 +17,29 @@ headers = {
 }
 
 # Define the user data with correct fields for email and two-factor authentication
-user_data = {
-    "name": "2223344",  # Username for the new user
-    "passwd": "mypass",  # Set the user's password
-    "email-to": "a@b.com",  # Email address for two-factor authentication
-    "two-factor": "email",  # Enable email-based two-factor authentication
-    "status": "enable",  # User account status: enable or disable
-    "group": ["edari-access"],  # Add user to the 'edari-access' group
-    "auth-concurrent": "disable"  # Disable concurrent authentication
-}
+# user_data = {
+#     "name": "2223344",  # Username for the new user
+#     "passwd": "mypass",  # Set the user's password
+#     "email-to": "a@b.com",  # Email address for two-factor authentication
+#     "two-factor": "email",  # Enable email-based two-factor authentication
+#     "status": "enable",  # User account status: enable or disable
+#     "group": ["edari-access"],  # Add user to the 'edari-access' group
+#     "auth-concurrent": "disable"  # Disable concurrent authentication
+# }
 
 # Function to create the user
-def create_forti_user():
+def create_forti_user(user_data):
     response = requests.post(url, headers=headers, json=user_data, verify=False)
     
     if response.status_code == 200:
-        return response.json()  # Successful response
+        return  True  #response.json()  # Successful response
     else:
-        return f"Error {response.status_code}: {response.text}"
+        return False #f"Error {response.status_code}: {response.text}"
 
 # Main script
 #"https://<fortigate-ip>/api/v2/cmdb/user/local/{username}"
 
-def modify_user(username, new_password):
+def modify_forti_user(username, new_password):
     url = f"{url}/{username}"
     data = {
         "passwd": new_password
@@ -50,7 +50,7 @@ def modify_user(username, new_password):
     else:
         print(f"Failed to modify user '{username}': {response.text}")
 
-def delete_user(username):
+def delete_forti_user(username):
     url = f"{url}/{username}"
     response = requests.delete(url, headers=headers, verify=False)
     if response.status_code == 200:
@@ -106,10 +106,12 @@ HEADERS = {
 # Disable SSL warnings if necessary (not recommended for production)
 requests.packages.urllib3.disable_warnings()
 
-def can_manage_users():
+'''
+def forti_can_manage_users():
+    
     """Check if the API key has permission to list users, indicating user management access."""
-    url = f"{BASE_URL}/cmdb/user/local"
-    response = requests.get(url, headers=HEADERS, verify=False)
+    url = f"https://{fortigate_ip}/api/v2/cmdb/user/local"
+    response = requests.get(url, headers=headers, verify=False)
     
     if response.status_code == 200:
         print("API key has permission to manage users.")
@@ -121,10 +123,11 @@ def can_manage_users():
         print(f"Failed to connect to FortiGate: {response.status_code} - {response.text}")
         return False
 
-def user_exists(username):
+def forti_user_exists(username):
     """Check if a user with the given username already exists on the FortiGate."""
+    BASE_URL=f'https://{fortigate_ip}'
     url = f"{BASE_URL}/cmdb/user/local/{username}"
-    response = requests.get(url, headers=HEADERS, verify=False)
+    response = requests.get(url, headers=headers, verify=False)
     
     if response.status_code == 200:
         print(f"User '{username}' already exists.")
@@ -134,17 +137,15 @@ def user_exists(username):
         return False
     else:
         print(f"Error checking user existence: {response.status_code} - {response.text}")
-        return None
+        return False
 
 # Usage
-if can_manage_users():
-    username = "testuser"
-    if not user_exists(username):
-        print("It is possible to create the user.")
-    else:
-        print("The user already exists; consider modifying instead of creating.")
-else:
-    print("User management is not allowed with the current API key.")
+# if can_manage_users():
+#     username = "testuser"
+#     if not user_exists(username):
+#         print("It is possible to create the user.")
+#     else:
+#         print("The user already exists; consider modifying instead of creating.")
+# else:
+#     print("User management is not allowed with the current API key.")
 
-
-'''

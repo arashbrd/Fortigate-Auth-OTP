@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Search for users based on partial matches in /etc/passwd and retrieve full name and work phone
+search_users() {
+    local search_pattern="$1"
+    local users=$(grep -i "$search_pattern" /etc/passwd)
+    if [ -n "$users" ]; then
+        echo "Users found matching '$search_pattern':"
+        while IFS= read -r user_entry; do
+            local username=$(echo "$user_entry" | cut -d: -f1)
+            local full_name=$(echo "$user_entry" | cut -d: -f5 | cut -d, -f1)
+#            local full_name_phone=$(echo "$user_entry" | cut -d: -f5)
+	    local  phone_number=$(echo "$user_entry" | cut -d: -f5 | cut -d, -f3)
+#            local phone_number=$(echo "$full_name_phone" | awk -F ',' '{print $2}')
+            echo "Username: $username"
+            echo "Full Name: $full_name"
+            echo "Work Phone: $phone_number"
+            echo "-----"
+        done <<< "$users"
+    else
+        echo "No users found matching '$search_pattern'."
+    fi
+}
+
+# Check if the correct number of arguments is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <search_pattern>"
+    exit 1
+fi
+
+# Call the function with the provided username
+search_users "$1"
+

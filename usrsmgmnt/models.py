@@ -17,8 +17,8 @@ class LinFortiUsers(AbstractUser):
         validators=[validate_linux_username],
     )
     national_code = models.CharField(max_length=10, unique=True,verbose_name='کد ملی ',validators=[validate_national_code])
-    farsi_first_name = models.CharField(max_length=30,verbose_name='نام',blank=False)
-    farsi_last_name = models.CharField(max_length=50,verbose_name='نام خانوادگی',blank=False)
+    farsi_first_name = models.CharField(max_length=30,verbose_name='نام به فارسی',blank=False)
+    farsi_last_name = models.CharField(max_length=50,verbose_name=' نام خانوادگی به فارسی',blank=False)
     phone_number = models.CharField(max_length=11,verbose_name=' شماره موبایل', unique=True)
     user_group = models.ForeignKey(
         'FortiGateUserGroup',
