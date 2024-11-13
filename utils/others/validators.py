@@ -32,3 +32,12 @@ def validate_linux_username(username):
     # Check if the username is not in the reserved usernames list
     if username in reserved_usernames:
         raise ValidationError(f"The username '{username}' is reserved and cannot be used.")
+
+
+def validate_phone_number(value):
+    # الگوی معتبر برای شماره موبایل ایران (0 شروع می‌شود و 11 رقم دارد)
+    phone_regex = r"^(09)(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7}$"
+    
+    # چک کردن با استفاده از regex
+    if not re.match(phone_regex, value):
+        raise ValidationError("شماره موبایل وارد شده معتبر نمی‌باشد. لطفا شماره موبایل ایران را وارد کنید.")

@@ -20,6 +20,9 @@ from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3 
 import re
 from django.core.exceptions import ValidationError
+# from .models import LinFortiUsers
+from django.contrib.auth.models import User
+from django_jalali.admin.widgets import AdminSplitjDateTime
 
 class UserRegistrationForm(forms.ModelForm):
     # captcha = ReCaptchaField(
@@ -55,3 +58,29 @@ class UserRegistrationForm(forms.ModelForm):
             raise ValidationError("فرمت شماره موبایل اشتباه میباشد.مثال 09123456789")
 
         return phone_number
+
+
+
+
+
+
+class CustomUserChangeForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = '__all__'
+        
+        widgets = {
+            
+            'date_verify': AdminSplitjDateTime,
+            # 'date_verify': AdminTimeWidget,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # پنهان کردن بخش permissions
+        if 'user_permissions' in self.fields:
+            self.fields['user_permissions'].widget = forms.HiddenInput()
+            self.fields['is_verified'].widget = forms.HiddenInput()
+        # self.fields['password'] = forms.CharField(widget=forms.PasswordInput(), required=True)
+
+  

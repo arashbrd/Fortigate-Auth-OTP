@@ -1,15 +1,72 @@
+
 {% extends "admin/change_form.html" %}
+{% load static %}
 {% load i18n %}
 {% block extrahead %}
 {{ block.super }}
+
+
 <script type="text/javascript">
+    const is_verified = "{{ is_verified|yesno:'true,false'|default:'false' }}";
+
     document.addEventListener("DOMContentLoaded", function () {
+    
+        if (is_verified === "true") {  // اگر مقدار برابر ۱ بود، فیلدها غیرفعال شوند
+            const allFields = document.querySelectorAll("input, select");
+
+        allFields.forEach(field => {
+            // اگر فیلد، CSRF نیست، آن را غیرفعال کنید
+            if (field.name !== "csrfmiddlewaretoken" ) {
+                field.setAttribute("readonly", "true");
+            }
+            if (field.name == "_save" ) {
+                field.removeAttribute("readonly");
+            }
+        });
+
+            const phoneNumberField = document.getElementById("id_phone_number");
+            const userGroupField = document.getElementById("id_user_group");
+            const is_activeCheckBox =document.getElementById("id_is_active");
+            const is_staffCheckBox =document.getElementById("id_is_staff");
+            const is_superuserCheckBox =document.getElementById("id_is_superuser");
+            const saveButton = document.querySelector("input[name='_save']");
+
+
+
+            if (phoneNumberField) 
+                {
+                    phoneNumberField.removeAttribute("readonly"); // فعال کردن دوباره
+                }
+            if (userGroupField) 
+                {
+                userGroupField.removeAttribute("readonly"); // فعال کردن دوباره
+                }
+            if (is_activeCheckBox) 
+                {
+                is_activeCheckBox.removeAttribute("readonly"); // فعال کردن دوباره
+                }
+           
+            if (is_staffCheckBox) 
+                {
+                is_staffCheckBox.removeAttribute("readonly"); // فعال کردن دوباره
+                }
+            if (is_superuserCheckBox) 
+                {
+                is_superuserCheckBox.removeAttribute("readonly"); // فعال کردن دوباره
+                }
+            if (saveButton) 
+                {
+                    saveButton.disabled = true;
+                 
+                }
+           
+        }
        
         const userGroupDropdown = document.getElementById("id_user_group");  // adjust ID as necessary
         const formFields = document.querySelectorAll(".form-row input, .form-row select, .form-row textarea");
         const saveButton = document.querySelector("input[name='_save']");
-       // const addanotherButton = document.querySelector("input[name='_addanother']");
-       // const saveContinueButton = document.querySelector("input[name='_continue']");
+        //const addanotherButton = document.querySelector("input[name='_addanother']");
+        //const saveContinueButton = document.querySelector("input[name='_continue']");
         
         // Function to check if all fields are populated
         function checkFields() {
@@ -24,12 +81,13 @@
             if (allFieldsFilled) {
                 saveButton.disabled = false;
                 //saveContinueButton.disabled = false;
-               // addanotherButton.disabled = false;
+                //addanotherButton.disabled = false;
             } else {
                 saveButton.disabled = true;
-               // addanotherButton.disabled = true;
+                //addanotherButton.disabled = true;
                 //saveContinueButton.disabled = true;
             }
+            
         }
 
         // Initial check on page load
@@ -41,9 +99,23 @@
         });
     });
 </script>
+<!-- <script src="{% static 'js/ajax_save2.js' %}"></script> -->
 {% endblock %}
+
 
 
 {% block submit_buttons_bottom %}
-    <input type="submit" value="{% trans 'Save' %}" class="default" name="_save" />
-{% endblock %}
+
+ <div class="submit-row">
+    <input type="submit" value="{% trans 'ذخیره تغییرات' %}" class="default" name="_save">
+
+</div>
+<!-- 
+    {% if is_in_add_form %}
+    <span style="margin-left: 10px; color: rgb(230, 58, 58);"> پسورد کاربر برابر با چهار رقم آخر کد ملی فرد می باشد</span>
+    {% endif %}
+<input type="submit" value="{% trans 'Save' %}" class="default" name="_save" /> 
+<input type="submit" value="{% trans ' ویرایش و ذخیره تغییرات' %}" class="default" name="_continue">
+<input type="submit" value="{% trans 'ذخیره و اضافه کردن یکی دیگر' %}" class="default" name="_addanother">
+-->
+{% endblock %} 

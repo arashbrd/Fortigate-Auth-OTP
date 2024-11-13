@@ -1,0 +1,62 @@
+{% extends "admin/add_form.html" %}
+{% load static %}
+{% load i18n %}
+{% block extrahead %}
+{% block content %}
+    <h2>این متن سفارشی شما است که می‌خواهید در بالای فرم اضافه کردن نمایش داده شود.</h2>
+    <p>می‌توانید جزئیات و توضیحات بیشتری درباره نحوه پر کردن فرم در اینجا اضافه کنید.</p>
+{{ block.super }}
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+       
+        const userGroupDropdown = document.getElementById("id_user_group");  // adjust ID as necessary
+        const formFields = document.querySelectorAll(".form-row input, .form-row select, .form-row textarea");
+        const saveButton = document.querySelector("input[name='_save']");
+        //const addanotherButton = document.querySelector("input[name='_addanother']");
+        const saveContinueButton = document.querySelector("input[name='_continue']");
+        
+        // Function to check if all fields are populated
+        function checkFields() {
+            let allFieldsFilled = true;
+
+            formFields.forEach(field => {
+                if (!field.value.trim()) {
+                    allFieldsFilled = false;
+                }
+            });
+
+            if (allFieldsFilled) {
+                saveButton.disabled = false;
+                //saveContinueButton.disabled = false;
+                //addanotherButton.disabled = false;
+            } else {
+                saveButton.disabled = true;
+                //addanotherButton.disabled = true;
+                //saveContinueButton.disabled = true;
+            }
+        }
+
+        // Initial check on page load
+        checkFields();
+
+        // Check fields on each change
+        formFields.forEach(field => {
+            field.addEventListener("input", checkFields);
+        });
+    });
+</script>
+
+{% endblock %}
+
+
+ {% block submit_buttons_bottom %}
+
+ <div class="submit-row">
+    <input type="submit" value="{% trans '111ذخیره ' %}" class="default" name="_save">
+</div>
+<!-- <input type="submit" value="{% trans 'Save' %}" class="default" name="_save" /> 
+<input type="submit" value="{% trans 'ذخیره و ادامه ویرایش' %}" class="default" name="_continue">
+<input type="submit" value="{% trans 'ذخیره و اضافه کردن یکی دیگر' %}" class="default" name="_addanother">
+-->
+{% endblock %} 
+{% endblock %} 

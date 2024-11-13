@@ -3,10 +3,11 @@ from django import forms
 from django.contrib import admin
 from django.utils import timezone
 from django.contrib import messages
+from django.http import HttpRequest, JsonResponse
 from utils.sms.send_sms import send_sms
 from django.utils.html import format_html
 from .models import LinFortiUsers,LogEntry
-from django.contrib.auth.models import User
+
 from utils.forti.forti_utils import get_fortigate_specs
 from utils.forti.forti_utils import check_all_things_is_ok
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -14,11 +15,13 @@ from utils.sms.retrieve_credit import check_sms_panel,retrieve_credit
 from utils.linux.linux_users import create_linux_user,can_create_linux_user,delete_linux_user
 from utils.forti.forti_user import forti_user_exists,forti_can_manage_users,create_forti_user
 from core.settings import DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE,EMAIL_DOMAIN,MELLI_PAYAMAK_API_KEY
-
-
+from django.shortcuts import redirect
+import datetime
+from .forms import CustomUserChangeForm
 
 # Custom admin site class
 class CustomAdminSite(admin.AdminSite):
+    
     site_header = "پنل مدیریت کاربران احراز هویت دو مرحله ای"
     site_title = "کاربران"
     index_title = "خوش آمدید"
@@ -41,29 +44,125 @@ admin_site = CustomAdminSite()
 
 admin.site = admin_site
 
-class CustomUserChangeForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # پنهان کردن بخش permissions
-        if 'user_permissions' in self.fields:
-            self.fields['user_permissions'].widget = forms.HiddenInput()
 
 class LinFortiUserAdmin(BaseUserAdmin):
+    # add_form = CustomUserChangeForm
+    # def get_form(self, request, obj=None, **kwargs):
+    #     form = super().get_form(request, obj, **kwargs)
+        
+    #     # ارسال متغیر به قالب تنها در حالت افزودن
+    #     if obj is None:  # اگر obj وجود ندارد، یعنی در حالت افزودن هستیم
+    #         self.is_in_add_form = True
+    #     else:
+    #         self.is_in_add_form = False
+    #     return form
 
+    # def render_change_form(self, request, context, *args, **kwargs):
+    #     # اضافه کردن متغیر به کانتکست
+    #     context['is_in_add_form'] = getattr(self, 'is_in_add_form', False)
+    #     return super().render_change_form(request, context, *args, **kwargs)
+    
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        obj = self.get_object(request, object_id)
+        extra_context = extra_context or {}        
+        # اگر مقدار status در دیتابیس ۱ بود، به قالب ارسال کنید
+        extra_context['is_verified'] = obj.is_verified if obj else False
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+    
     def save_model(self, request, obj, form, change):
+        print(f"change is {change}")
+        if change: 
+            print("CHANGR IS TRUE")
+            # ADD USER BY REGISTERATION IN WEBFORM
+            #********************************
+
+
+            #************************************
+
+            if obj.is_verified:
+                print("obj.is_verified IS TRUE")
+                # ONLY EDIT REQUIRED --USER VERIFIED BEFORE BY ADMIN
+                #********************************
+                 #************************************
+                pass
+            else: 
+                
+                print("obj.is_verified IS False")
+                # SAVE NEW OBJ AND VERIFY BY ADMIN
+                #********************************
+                #************************************
+                pass 
+
+                
+        else:
+            print(" CHANGE IS FALSE NEW USER....") 
+            #ADD NEW USER BY ADMIN
+            #********************************
+            usrname=request.POST.get('username')
+            password=request.POST.get('national_code')[-4:]
+            first_name=request.POST.get('first_name')
+            last_name=request.POST.get('last_name')
+            user_group=[form.cleaned_data.get('user_group').fortigate_name]
+            phone_number=request.POST.get('phone_number')
+            #TODO CHECK USER DOES NOT EXIST 
+            if  check_sms_panel(option='option3'):
+                if can_create_linux_user(usrname): 
+                    if forti_can_manage_users() and not forti_user_exists(usrname): 
+                        user_data = {
+                        "name": usrname,  # Username for the new user
+                        "passwd": password,  # Set the user's password
+                        "email-to": usrname+'@'+EMAIL_DOMAIN,  # Email address for two-factor authentication
+                        "two-factor": "email",  # Enable email-based two-factor authentication
+                        "status": "enable",  # User account status: enable or disable
+                        "group": user_group,  # Add user to the 'edari-access' group
+                        "auth-concurrent": "disable"  # Disable concurrent authentication
+                        }
+                        print ('check_sms_panel is passed #############################')
+                        if create_linux_user(username=usrname,first_name=first_name,last_name=last_name,phone_number=phone_number):
+                            print ('create_linux_user is passed #############################')
+                            if create_forti_user(user_data):
+                                print ('create_forti_user is passed #############################')
+                        
+                                obj.is_verified=obj.is_active
+                                obj.date_verify=datetime.datetime.now()
+                                super().save_model(request, obj, form, change)
+                                print ('save model is passed #############################')
+                                # send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
+                                print ('send_sms is passed #############################')
+                            else:
+                                delete_linux_user(usrname)
+                                self.message_user(request, "در ساخت یوزر در فایروال مشکلی پیش آمده", level=messages.ERROR)                                
+
+                        else:
+                            #LINUX PROBLEM IN CREATING USER
+                            print ('create_linux_user NOT passed #############################')
+                            self.message_user(request, "در ساخت یوزر در سرور لینوکس مشکلی پیش آمده", level=messages.ERROR)                
+                    else:#fORTI
+                        # fORTI NOT WORKING
+                        print ('fORTI NOT passed #############################')
+                        self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد: فایروال ", level=messages.ERROR)
+                else:#linux
+                    # linux NOT WORKING
+                    print ('LINUX NOT passed #############################')
+                    self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:لینوکس  ", level=messages.ERROR)
+                        
+            else:#check_sms_panel
+                # SMS PANEL NOT WORKING
+                print ('check_sms_panel NOT passed #############################')
+                self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:پنل پیامکی ", level=messages.ERROR)               
+
+                #************************************
+            
+
+    
+    def save_my_model(self, request, obj, form, change):
         print ('1#############################')
         usrname=request.POST.get('username')
-        password=request.POST.get('username')[-4:]
+        password=request.POST.get('national_code')[-4:]
         first_name=request.POST.get('first_name')
         last_name=request.POST.get('last_name')
         user_group=[form.cleaned_data.get('user_group').fortigate_name]
         phone_number=request.POST.get('phone_number')
-        print (f'usergroup is {user_group}')     
-        
         
         if user_group!=['']:
             print ('not changed #############################')
@@ -84,9 +183,12 @@ class LinFortiUserAdmin(BaseUserAdmin):
                             print ('create_linux_user is passed #############################')
                             if create_forti_user(user_data):
                                 print ('create_forti_user is passed #############################')
+                        
+                                obj.is_verified=True
+                                obj.date_verify=datetime.datetime.now()
                                 super().save_model(request, obj, form, change)
                                 print ('save model is passed #############################')
-                                send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
+                                # send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
                                 print ('send_sms is passed #############################')
                             else:
                                 delete_linux_user(usrname)
@@ -113,6 +215,8 @@ class LinFortiUserAdmin(BaseUserAdmin):
         else:#user_group
             print ('CHANGE IS TRUE #############################')
             self.message_user(request, "Script failed, object was not saved.", level=messages.ERROR)
+
+
 
     list_display = ('farsi_first_name','farsi_last_name','first_name', 'last_name','national_code','phone_number','is_active','user_group')
     
@@ -141,19 +245,20 @@ class LinFortiUserAdmin(BaseUserAdmin):
 
     # حذف بخش permissions از فرم ادمین
     fieldsets = (
-        (None, {'fields': ('username',)}),
-        ('اطلاعات شخصی', {'fields': ('farsi_first_name','farsi_last_name','first_name', 'last_name','national_code','phone_number','user_group')}),
-        ('وضعیت', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
-        # ('تاریخ‌های مهم', {'fields': ('last_login', 'date_joined')}),
+        ('Username', {'fields': ('username',)}),
+        ('Personal Info', {'fields': ('farsi_first_name','farsi_last_name','first_name', 'last_name','national_code','phone_number','user_group')}),
+        ('Status', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+         ('Dates ', {'fields': ('date_verify',)}),#'last_login', 'date_joined',
     )
     add_fieldsets = (
     (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'national_code', 'phone_number','user_group')
+            'fields': ('username','farsi_first_name','farsi_last_name', 'first_name', 'last_name','password1','password2', 'national_code', 'phone_number','user_group','is_active','is_staff','is_superuser')
         }
         ),
     )
-    
+    ordering = ('username',)
+    filter_horizontal = ()
 
 # admin.site.unregister(LinFortiUsers)
 admin.site.register(LinFortiUsers, LinFortiUserAdmin)

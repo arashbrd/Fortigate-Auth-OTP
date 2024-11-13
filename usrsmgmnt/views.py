@@ -81,7 +81,7 @@ def register_user(request):
         
 
 
-@csrf_exempt
+@csrf_exempt #TODO i should delete it
 def connect_fortigate(request):
     if request.method == 'POST':
         data = json.loads(request.body)

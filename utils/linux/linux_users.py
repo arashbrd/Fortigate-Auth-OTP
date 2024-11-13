@@ -5,9 +5,10 @@ import subprocess
 import logging
 logger =  logging.getLogger('db')
 add_script_path = os.path.abspath('./utils/linux/scripts/fumsuseradd.sh')
+
 def create_linux_user(**kwargs):
     username = kwargs['username']
-    full_name = kwargs['first_name']+" "+kwargs['last_name']
+    full_name = kwargs['first_name'] + " "+kwargs['last_name']
     phone_number=kwargs['phone_number']
     try:
         # Create the user
@@ -40,12 +41,6 @@ def modify_linux_user(username, new_shell=None, new_home=None):
     except subprocess.CalledProcessError as e:
         print(f"Error modifying user {username}: {e}")
 
-def delete_linux_user(username):
-    try:
-        subprocess.run(['sudo', 'userdel', '-r', username], check=True)
-        print(f"User {username} deleted successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error deleting user {username}: {e}")
 
 
 def can_create_linux_user(username):
