@@ -70,7 +70,7 @@ def check_sms_panel(option):
            return True
        print(f'amount of panel is {real_credit}')
        return False
-    except Exception  as e :  
+    except Exception as e :  
         print(e)      
         logger.exception(f'An Exception eccured when fetching credit from SMS panel:{e} ')    
         return False

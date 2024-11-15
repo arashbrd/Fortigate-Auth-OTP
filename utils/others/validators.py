@@ -41,3 +41,11 @@ def validate_phone_number(value):
     # چک کردن با استفاده از regex
     if not re.match(phone_regex, value):
         raise ValidationError("شماره موبایل وارد شده معتبر نمی‌باشد. لطفا شماره موبایل ایران را وارد کنید.")
+    
+    
+def validate_english_alphabet(value):
+    if not re.match(r'^[a-zA-Z]+$', value):  # Regular expression for English alphabet
+        raise ValidationError(
+            'Only English alphabet characters are allowed',
+            params={'value': value},
+        )

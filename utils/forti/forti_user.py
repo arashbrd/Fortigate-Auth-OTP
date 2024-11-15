@@ -51,12 +51,14 @@ def modify_forti_user(username, new_password):
         print(f"Failed to modify user '{username}': {response.text}")
 
 def delete_forti_user(username):
-    url = f"{url}/{username}"
-    response = requests.delete(url, headers=headers, verify=False)
+    url1 = f"{url}/{username}"
+    response = requests.delete(url1, headers=headers, verify=False)
     if response.status_code == 200:
         print(f"User '{username}' deleted successfully.")
+        return True
     else:
         print(f"Failed to delete user '{username}': {response.text}")
+        return False
 
 
 '''

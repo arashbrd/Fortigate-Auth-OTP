@@ -3,11 +3,11 @@ import logging
 from django.db import models
 from django_jalali.db import models as jmodels
 from django.contrib.auth.models import AbstractUser
-from utils.others.validators import validate_linux_username,validate_national_code,validate_phone_number
+from utils.others.validators import validate_linux_username,validate_national_code,validate_phone_number,validate_english_alphabet
 
 
 
-class LinFortiUsers(AbstractUser):
+class LinFortiUsers(AbstractUser):   
     
     username = models.CharField(
         max_length=150,
@@ -16,6 +16,26 @@ class LinFortiUsers(AbstractUser):
         verbose_name='نام کاربری',
         validators=[validate_linux_username],
         help_text="نام کاربری ترکیبی از نام خانوادگی لاتین و چهار رقم آخر کد ملی میباشد",
+    )
+    # Override the `first_name` field to change help_text
+    first_name = models.CharField(validators=[validate_english_alphabet],
+        max_length=150,
+        
+        help_text="Enter the first name of the user"
+    )
+    
+    
+    # Override the `last_name` field to change help_text
+    last_name = models.CharField(validators=[validate_english_alphabet],
+        max_length=150,
+        
+        help_text="Enter the last name of the user"
+    )
+    is_active = models.BooleanField(verbose_name='فعال',
+        default=True,
+        help_text=" نشان می‌دهد که آیا این کاربر اجازهٔ فعالیت دارد یا خیر. به جای حذف کاربر این تیک را بردارید."
+
+                  "در صورت فعال نبودن کاربر پیامک اطلاع رسانی برای او ارسال نمیگردد"
     )
     is_verified = models.BooleanField(default=False)
     date_verify=jmodels.jDateTimeField(blank=True, null=True,verbose_name='تاریخ تایید')
@@ -31,6 +51,13 @@ class LinFortiUsers(AbstractUser):
         blank=True,
         verbose_name="گروه کاربری FortiGate"
     )
+    prevent_delete = models.BooleanField(default=True)
+    def delete(self, *args, **kwargs):
+        if self.prevent_delete:
+            print("&&&&&&&&&&&&&&&&&&&&")
+            print(f"prevent_delete = {self.prevent_delete}")          
+            return
+        super().delete(*args, **kwargs)
    
 class FortiGateUserGroup(models.Model):
     fortigate_id = models.IntegerField( unique=True, verbose_name="شناسه FortiGate")
