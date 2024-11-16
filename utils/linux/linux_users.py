@@ -1,23 +1,29 @@
-    
 import os
 import pwd
 import subprocess
 import logging
-logger =  logging.getLogger('db')
-add_script_path = os.path.abspath('./utils/linux/scripts/fumsuseradd.sh')
-edit_script_path=os.path.abspath('./utils/linux/scripts/fumsuseredit.sh')
+
+logger = logging.getLogger("db")
+add_script_path = os.path.abspath("./utils/linux/scripts/fumsuseradd.sh")
+edit_script_path = os.path.abspath("./utils/linux/scripts/fumsuseredit.sh")
+
+
 def create_linux_user(**kwargs):
-    
-    username = kwargs['username']
-    full_name = kwargs['first_name'] + " "+kwargs['last_name']
-    phone_number=kwargs['phone_number']
+
+    username = kwargs["username"]
+    full_name = kwargs["first_name"] + " " + kwargs["last_name"]
+    phone_number = kwargs["phone_number"]
     try:
         # Create the user
-        result = subprocess.run([add_script_path, username, full_name, phone_number], capture_output=True, text=True)
-        
+        result = subprocess.run(
+            [add_script_path, username, full_name, phone_number],
+            capture_output=True,
+            text=True,
+        )
+
         # Set the password
         if result.returncode == 0:
-            logger.info(f'User {username} created successfully in linux server')
+            logger.info(f"User {username} created successfully in linux server")
             print(f"User {username} created successfully.")
             return True
         return False
@@ -27,14 +33,16 @@ def create_linux_user(**kwargs):
         return False
 
 
-def modify_linux_user(username,phone_number):
+def modify_linux_user(username, phone_number):
     try:
         # Create the user
-        result = subprocess.run([edit_script_path, username, phone_number], capture_output=True, text=True)
-        
+        result = subprocess.run(
+            [edit_script_path, username, phone_number], capture_output=True, text=True
+        )
+
         # Set the password
         if result.returncode == 0:
-            logger.info(f'User {username} edited successfully in linux server')
+            logger.info(f"User {username} edited successfully in linux server")
             print(f"User {username} edited successfully.")
             return True
         return False
@@ -46,15 +54,15 @@ def modify_linux_user(username,phone_number):
 
 def can_create_linux_user(username):
     # myusername = os.getlogin()
-    
+
     # # Check if running with root privileges
     # if os.geteuid() != 0:
     #     print(f"Permission denied for Current user: {myusername} with userID: {os.geteuid()}: You need to run this script with sudo or as root.")
     #     return False
-    
+
     # Check if username already exists
     try:
-        user_info=pwd.getpwnam(username)
+        user_info = pwd.getpwnam(username)
         print(f"User '{username}' already exists:{user_info}")
         return False
     except KeyError as e:
@@ -64,32 +72,36 @@ def can_create_linux_user(username):
 
     # Optional: Try a dry-run command to confirm useradd command is available
     try:
-        
-        result = subprocess.run(['sudo', add_script_path, '--help'], capture_output=True, check=True)
+
+        result = subprocess.run(
+            ["sudo", add_script_path, "--help"], capture_output=True, check=True
+        )
         print("User creation command is available.")
-        return True
+        if result.returncode == 0:
+            return True
+        return False
     except subprocess.CalledProcessError as e:
         print(f"Error: useradd command is not available.{e}")
         return False
 
 
-
 def delete_linux_user(username):
     try:
         # Run the userdel command with sudo to delete the user
-        result = subprocess.run(['sudo', 'userdel', username], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["sudo", "userdel", username], capture_output=True, text=True, check=True
+        )
         print(f"User '{username}' deleted successfully.")
-        return True
+        if result.returncode == 0:
+            return True
+        return False
     except subprocess.CalledProcessError as e:
         # Handle the case where the command fails
-        # logger.error(f"Error deleting user '{username}':", e.stderr)
+        logger.error(f"Error deleting user '{username}':", e.stderr)
         return False
     except TypeError:
         return False
-       
 
-
-import subprocess
 
 def create_linux_user1(username, full_name, phone_number):
     """
@@ -111,11 +123,14 @@ def create_linux_user1(username, full_name, phone_number):
 
         # دستور برای ایجاد کاربر
         command = [
-            "sudo", "useradd",
+            "sudo",
+            "useradd",
             "-M",  # جلوگیری از ایجاد دایرکتوری خانگی
-            "-s", "/bin/false",  # غیرفعال کردن دسترسی شل
-            "-c", f"{full_name},,{phone_number},",  # تنظیم full_name و phone_number
-            username  # نام کاربری
+            "-s",
+            "/bin/false",  # غیرفعال کردن دسترسی شل
+            "-c",
+            f"{full_name},,{phone_number},",  # تنظیم full_name و phone_number
+            username,  # نام کاربری
         ]
 
         # اجرای دستور ایجاد کاربر
@@ -127,7 +142,7 @@ def create_linux_user1(username, full_name, phone_number):
 
     except Exception as e:
         return f"خطای غیرمنتظره: {str(e)}"
-import subprocess
+
 
 def update_linux_user(username, new_phone_number):
     """
@@ -147,7 +162,9 @@ def update_linux_user(username, new_phone_number):
             return False
 
         # گرفتن اطلاعات فعلی کاربر
-        get_user_info = subprocess.run(["getent", "passwd", username], capture_output=True, text=True)
+        get_user_info = subprocess.run(
+            ["getent", "passwd", username], capture_output=True, text=True
+        )
         if get_user_info.returncode != 0:
             return False
 
@@ -163,9 +180,11 @@ def update_linux_user(username, new_phone_number):
 
         # دستور برای بروزرسانی اطلاعات کاربر
         command = [
-            "sudo", "usermod",
-            "-c", new_comment,  # بروزرسانی فیلد comment
-            username
+            "sudo",
+            "usermod",
+            "-c",
+            new_comment,  # بروزرسانی فیلد comment
+            username,
         ]
 
         # اجرای دستور
@@ -175,5 +194,5 @@ def update_linux_user(username, new_phone_number):
         else:
             return False
 
-    except Exception as e:
+    except Exception:
         return False

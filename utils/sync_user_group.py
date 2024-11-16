@@ -4,21 +4,19 @@ from dotenv import load_dotenv
 import os
 import urllib3
 
+
 def sync_user_groups():
     # Disable warnings for insecure HTTPS requests
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     # Load environment variables
     load_dotenv()
-    api_key = os.getenv('FORTIGATE_API_KEY')
-    fortigate_ip = os.getenv('FORTIGATE_IP')
+    api_key = os.getenv("FORTIGATE_API_KEY")
+    fortigate_ip = os.getenv("FORTIGATE_IP")
 
     # URL for FortiGate API
     fortigate_url = f"https://{fortigate_ip}/api/v2/cmdb/user/group"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     try:
         # Send request to FortiGate API to fetch user groups
@@ -28,29 +26,33 @@ def sync_user_groups():
         user_groups = response.json().get("results", [])
 
         # Retrieve all existing groups from the database
-        existing_groups = {group.name: group for group in FortiGateUserGroup.objects.all()}
+        existing_groups = {
+            group.name: group for group in FortiGateUserGroup.objects.all()
+        }
 
         # Add or update groups
         for group in user_groups:
-            group_name = group['name']
+            group_name = group["name"]
             if group_name in existing_groups:
                 # Update existing group if needed
-                existing_groups[group_name].save()  # Add additional field updates if necessary
+                existing_groups[
+                    group_name
+                ].save()  # Add additional field updates if necessary
             else:
                 # Add new group
                 FortiGateUserGroup.objects.create(name=group_name)
 
         # Delete groups that are no longer present in FortiGate
         for group_name in list(existing_groups.keys()):
-            if group_name not in [group['name'] for group in user_groups]:
+            if group_name not in [group["name"] for group in user_groups]:
                 existing_groups[group_name].delete()
 
         print("User groups synchronized successfully.")
-        return true
+        return True
 
     except requests.exceptions.RequestException as e:
         print(f"خطا در هنگام بازیابی اطلاعا گروههای کاربری از فایروال {e}")
-        return false
+        return False
     except Exception as e:
         print(f"خطا در هنگام بروزرسانی جدول گروه کاربری {e}")
-        return false
+        return False

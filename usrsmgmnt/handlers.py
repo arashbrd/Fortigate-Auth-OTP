@@ -1,10 +1,13 @@
 import logging
 from core.settings import DJANGO_DB_LOGGER_ENABLE_FORMATTER
+
 db_default_formatter = logging.Formatter()
 
+
 class DatabaseLogHandler(logging.Handler):
-    def emit(self, record):        
+    def emit(self, record):
         from .models import LogEntry
+
         trace = None
         if record.exc_info:
             trace = db_default_formatter.formatException(record.exc_info)
@@ -14,12 +17,12 @@ class DatabaseLogHandler(logging.Handler):
             msg = record.getMessage()
 
         kwargs = {
-            'logger_name': record.name,
-            'level': record.levelno,
-            'msg': msg,
-            'trace': trace,
-            'module':record.module,
-            'function':record.funcName,
+            "logger_name": record.name,
+            "level": record.levelno,
+            "msg": msg,
+            "trace": trace,
+            "module": record.module,
+            "function": record.funcName,
         }
 
         LogEntry.objects.create(**kwargs)

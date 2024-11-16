@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('usrsmgmnt', '0002_linfortiusers_can_delete'),
+        ("usrsmgmnt", "0002_linfortiusers_can_delete"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='linfortiusers',
-            name='can_delete',
+            model_name="linfortiusers",
+            name="can_delete",
         ),
         migrations.AddField(
-            model_name='linfortiusers',
-            name='prevent_delete',
+            model_name="linfortiusers",
+            name="prevent_delete",
             field=models.BooleanField(default=True),
         ),
     ]

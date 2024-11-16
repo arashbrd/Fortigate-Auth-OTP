@@ -1,1 +1,1 @@
-default_app_config = 'usrsmgmnt.apps.UsrsmgmntConfig'
+default_app_config = "usrsmgmnt.apps.UsrsmgmntConfig"

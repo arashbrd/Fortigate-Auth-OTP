@@ -1,20 +1,16 @@
 import requests
-import json
 import urllib3
 
 # Disable SSL warnings (not recommended for production)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # FortiGate details
-api_key = 'rhpgyj90dj95zg1rGn3gwnsHcgfHQn'
-fortigate_ip = '192.168.166.1'  # Replace with your FortiGate's IP address
-url = f'https://{fortigate_ip}/api/v2/cmdb/user/local'
+api_key = "rhpgyj90dj95zg1rGn3gwnsHcgfHQn"
+fortigate_ip = "192.168.166.1"  # Replace with your FortiGate's IP address
+url = f"https://{fortigate_ip}/api/v2/cmdb/user/local"
 
 # Set up headers for API key authentication
-headers = {
-    'Authorization': f'Bearer {api_key}',
-    'Content-Type': 'application/json'
-}
+headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
 # Define the user data with correct fields for email and two-factor authentication
 # user_data = {
@@ -27,25 +23,24 @@ headers = {
 #     "auth-concurrent": "disable"  # Disable concurrent authentication
 # }
 
+
 # Function to create the user
 def create_forti_user(user_data):
     response = requests.post(url, headers=headers, json=user_data, verify=False)
-    
+
     if response.status_code == 200:
-        return  True  #response.json()  # Successful response
+        return True  # response.json()  # Successful response
     else:
-        return False #f"Error {response.status_code}: {response.text}"
+        return False  # f"Error {response.status_code}: {response.text}"
+
 
 # Main script
-#"https://<fortigate-ip>/api/v2/cmdb/user/local/{username}"
+# "https://<fortigate-ip>/api/v2/cmdb/user/local/{username}"
 
-def modify_forti_user(username, user_group,status):
+
+def modify_forti_user(username, user_group, status):
     url1 = f"{url}/{username}"
-    data = {
-        "status": status,
-        "user_group":[user_group]
-
-    }
+    data = {"status": status, "user_group": [user_group]}
     response = requests.put(url1, headers=headers, json=data, verify=False)
     if response.status_code == 200:
         print(f"User '{username}' modified successfully.")
@@ -53,6 +48,7 @@ def modify_forti_user(username, user_group,status):
     else:
         print(f"Failed to modify user '{username}': {response.text}")
         return False
+
 
 def delete_forti_user(username):
     url1 = f"{url}/{username}"
@@ -65,7 +61,7 @@ def delete_forti_user(username):
         return False
 
 
-'''
+"""
 import requests
 
 # Set up the FortiGate details
@@ -112,13 +108,14 @@ HEADERS = {
 # Disable SSL warnings if necessary (not recommended for production)
 requests.packages.urllib3.disable_warnings()
 
-'''
+"""
+
+
 def forti_can_manage_users():
-    
     """Check if the API key has permission to list users, indicating user management access."""
     url = f"https://{fortigate_ip}/api/v2/cmdb/user/local"
     response = requests.get(url, headers=headers, verify=False)
-    
+
     if response.status_code == 200:
         print("API key has permission to manage users.")
         return True
@@ -126,15 +123,18 @@ def forti_can_manage_users():
         print("Permission denied: API key does not have permission to manage users.")
         return False
     else:
-        print(f"Failed to connect to FortiGate: {response.status_code} - {response.text}")
+        print(
+            f"Failed to connect to FortiGate: {response.status_code} - {response.text}"
+        )
         return False
+
 
 def forti_user_exists(username):
     """Check if a user with the given username already exists on the FortiGate."""
-    BASE_URL=f'https://{fortigate_ip}'
+    BASE_URL = f"https://{fortigate_ip}"
     url = f"{BASE_URL}/cmdb/user/local/{username}"
     response = requests.get(url, headers=headers, verify=False)
-    
+
     if response.status_code == 200:
         print(f"User '{username}' already exists.")
         return True
@@ -142,8 +142,11 @@ def forti_user_exists(username):
         print(f"User '{username}' does not exist and can be created.")
         return False
     else:
-        print(f"Error checking user existence: {response.status_code} - {response.text}")
+        print(
+            f"Error checking user existence: {response.status_code} - {response.text}"
+        )
         return False
+
 
 # Usage
 # if can_manage_users():
@@ -154,4 +157,3 @@ def forti_user_exists(username):
 #         print("The user already exists; consider modifying instead of creating.")
 # else:
 #     print("User management is not allowed with the current API key.")
-
