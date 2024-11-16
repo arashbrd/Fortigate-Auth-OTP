@@ -35,17 +35,19 @@ def melli_payamak_retrieve_credit():
     '''
     try:
         
-        response = requests.get(f'https://console.melipayamak.com/api/receive/credit/{MELLI_PAYAMAK_API_KEY}')
+        response = requests.get(f'https://console.melipayamak.com/api/receive/credit/{MELLI_PAYAMAK_API_KEY}')        
+        status=response.json()['status']
+        if status =="عملیات موفق":
+            return response.json()['amount']
+        else:
+            logger.exception(f'An Exception eccured when fetching credit from SMS panel {status}')
 
         
-        return response.json()['amount']
     except Exception as e:
         # print (response)
         print(e)
         logger.exception(f'An Exception eccured when fetching credit from SMS panel:{e} ') 
-        return response.json()['status']
-
-
+    return response.json()['status']
 
 # تابع اصلی برای انتخاب و اجرای تابع براساس فلگ
 def retrieve_credit(flag, *args, **kwargs):
@@ -58,8 +60,6 @@ def retrieve_credit(flag, *args, **kwargs):
 # print(retrieve_credit('option1', 5))  # خروجی: 10
 # print(retrieve_credit('option2', 5))  # خروجی: 15
 # print(retrieve_credit('option3', 5))  # خروجی: 25
-
-
 
 def check_sms_panel(option):
     try:

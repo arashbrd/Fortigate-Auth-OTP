@@ -5,7 +5,7 @@ import subprocess
 import logging
 logger =  logging.getLogger('db')
 add_script_path = os.path.abspath('./utils/linux/scripts/fumsuseradd.sh')
-
+edit_script_path=os.path.abspath('./utils/linux/scripts/fumsuseredit.sh')
 def create_linux_user(**kwargs):
     
     username = kwargs['username']
@@ -27,21 +27,21 @@ def create_linux_user(**kwargs):
         return False
 
 
-def modify_linux_user(username, new_shell=None, new_home=None):
+def modify_linux_user(username,phone_number):
     try:
-        cmd = ['sudo', 'usermod']
+        # Create the user
+        result = subprocess.run([edit_script_path, username, phone_number], capture_output=True, text=True)
         
-        if new_shell:
-            cmd.extend(['-s', new_shell])
-        if new_home:
-            cmd.extend(['-d', new_home, '-m'])
-        
-        cmd.append(username)
-        subprocess.run(cmd, check=True)
-        print(f"User {username} modified successfully.")
+        # Set the password
+        if result.returncode == 0:
+            logger.info(f'User {username} edited successfully in linux server')
+            print(f"User {username} edited successfully.")
+            return True
+        return False
     except subprocess.CalledProcessError as e:
-        print(f"Error modifying user {username}: {e}")
-
+        logger.error(f"Error editing user {username}: {e}")
+        print(f"Error editing user {username}: {e}")
+        return False
 
 
 def can_create_linux_user(username):
@@ -89,3 +89,91 @@ def delete_linux_user(username):
        
 
 
+import subprocess
+
+def create_linux_user1(username, full_name, phone_number):
+    """
+    ایجاد یک کاربر جدید در لینوکس بدون دایرکتوری خانگی با جزئیات مشخص شده.
+
+    Args:
+        username (str): نام کاربری.
+        full_name (str): نام کامل.
+        phone_number (str): شماره تلفن.
+
+    Returns:
+        str: پیام موفقیت یا خطا.
+    """
+    try:
+        # بررسی وجود کاربر
+        check_user = subprocess.run(["id", username], capture_output=True, text=True)
+        if check_user.returncode == 0:
+            return f"کاربر '{username}' قبلاً ایجاد شده است."
+
+        # دستور برای ایجاد کاربر
+        command = [
+            "sudo", "useradd",
+            "-M",  # جلوگیری از ایجاد دایرکتوری خانگی
+            "-s", "/bin/false",  # غیرفعال کردن دسترسی شل
+            "-c", f"{full_name},,{phone_number},",  # تنظیم full_name و phone_number
+            username  # نام کاربری
+        ]
+
+        # اجرای دستور ایجاد کاربر
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode == 0:
+            return f"کاربر '{username}' با موفقیت ایجاد شد."
+        else:
+            return f"خطا در ایجاد کاربر: {result.stderr}"
+
+    except Exception as e:
+        return f"خطای غیرمنتظره: {str(e)}"
+import subprocess
+
+def update_linux_user(username, new_phone_number):
+    """
+    بروزرسانی شماره تلفن کاربر موجود در لینوکس.
+
+    Args:
+        username (str): نام کاربری.
+        new_phone_number (str): شماره تلفن جدید.
+
+    Returns:
+        str: پیام موفقیت یا خطا.
+    """
+    try:
+        # بررسی وجود کاربر
+        check_user = subprocess.run(["id", username], capture_output=True, text=True)
+        if check_user.returncode != 0:
+            return False
+
+        # گرفتن اطلاعات فعلی کاربر
+        get_user_info = subprocess.run(["getent", "passwd", username], capture_output=True, text=True)
+        if get_user_info.returncode != 0:
+            return False
+
+        # تجزیه اطلاعات فعلی کاربر
+        user_info = get_user_info.stdout.strip().split(":")
+        current_comment = user_info[4]  # فیلد comment
+
+        # استخراج اطلاعات فعلی
+        parts = current_comment.split(",,")
+        full_name = parts[0] if len(parts) > 0 else ""
+        # تنظیم شماره تلفن جدید
+        new_comment = f"{full_name},,{new_phone_number},"
+
+        # دستور برای بروزرسانی اطلاعات کاربر
+        command = [
+            "sudo", "usermod",
+            "-c", new_comment,  # بروزرسانی فیلد comment
+            username
+        ]
+
+        # اجرای دستور
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode == 0:
+            return True
+        else:
+            return False
+
+    except Exception as e:
+        return False

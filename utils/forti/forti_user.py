@@ -39,16 +39,20 @@ def create_forti_user(user_data):
 # Main script
 #"https://<fortigate-ip>/api/v2/cmdb/user/local/{username}"
 
-def modify_forti_user(username, new_password):
-    url = f"{url}/{username}"
+def modify_forti_user(username, user_group,status):
+    url1 = f"{url}/{username}"
     data = {
-        "passwd": new_password
+        "status": status,
+        "user_group":[user_group]
+
     }
-    response = requests.put(url, headers=headers, json=data, verify=False)
+    response = requests.put(url1, headers=headers, json=data, verify=False)
     if response.status_code == 200:
         print(f"User '{username}' modified successfully.")
+        return True
     else:
         print(f"Failed to modify user '{username}': {response.text}")
+        return False
 
 def delete_forti_user(username):
     url1 = f"{url}/{username}"

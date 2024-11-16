@@ -13,14 +13,14 @@ from utils.forti.forti_utils import get_fortigate_specs
 from utils.forti.forti_utils import check_all_things_is_ok
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from utils.sms.retrieve_credit import check_sms_panel,retrieve_credit
-from utils.linux.linux_users import create_linux_user,can_create_linux_user,delete_linux_user
-from utils.forti.forti_user import forti_user_exists,forti_can_manage_users,create_forti_user,delete_forti_user
+from utils.linux.linux_users import create_linux_user,can_create_linux_user,delete_linux_user,update_linux_user
+from utils.forti.forti_user import forti_user_exists,forti_can_manage_users,create_forti_user,delete_forti_user,modify_forti_user
 from core.settings import DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE,EMAIL_DOMAIN,MELLI_PAYAMAK_API_KEY
 from django.shortcuts import redirect
 import datetime
 from .forms import CustomUserChangeForm
 from django.db import transaction
-
+from .middleware import get_current_request
 # Custom admin site class
 class CustomAdminSite(admin.AdminSite):
     
@@ -54,6 +54,8 @@ class LinFortiUserAdmin(BaseUserAdmin):
         """
         if "حذف شد" not in message:  # جلوگیری از پیام پیش‌فرض حذف
             super().message_user(request, message, level, extra_tags, fail_silently)
+        if " تغییر "  in message:  # جلوگیری از پیام پیش‌فرض حذف
+            return
         
        
         
@@ -178,93 +180,226 @@ class LinFortiUserAdmin(BaseUserAdmin):
         extra_context['is_verified'] = obj.is_verified if obj else False
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
     
-    # def save_model(self, request, obj, form, change):
-    #     print(f"change is {change}")
-    #     if change: 
-    #         print("CHANGE IS TRUE")
-            
-    #         # ADD USER BY REGISTERATION IN WEBFORM
-    #         #********************************
+    def save_model(self, request, obj, form, change):
+        # req = get_current_request()
+        print(f"change is {change}")
+        if change:
+            if request and request.path.startswith('/admin/usrsmgmnt/'): 
+                if obj.is_verified:
+                    print("CHANGE IS TRUE")
+                    # EDIT USER BY REGISTERATION IN ADMIN PANEL
+                    #********************************
+                    # obj.user_group=[form.cleaned_data.get('user_group').fortigate_name]
+                    usrname=obj.username        
+                    user_group=form.cleaned_data.get('user_group').fortigate_name
+                    phone_number=request.POST.get('phone_number')
+                    print(f"user_group is {user_group}")                    
+                    user_group_id = request.POST.get('user_group')
+                    if user_group_id:
+                        try:
+                            # اگر user_group یک ForeignKey است، مقدار را به شیء مرتبط تبدیل کنید
+                            from .models import FortiGateUserGroup  # مدل مرتبط
+                            obj.user_group = FortiGateUserGroup.objects.get(pk=user_group_id)
+                        except FortiGateUserGroup.DoesNotExist:
+                            obj.user_group = None  # مقدار نامعتبر: فیلد را خالی بگذارید
+                    else:
+                        obj.user_group = None
+
+                    is_active=request.POST.get('is_active')
+                    if is_active=='on':
+                        is_active=True
+                        status='enable'
+                    else:
+                        is_active=False
+                        status='disable'
+                    is_superuser=request.POST.get('is_superuser')
+                    if is_superuser=='on':
+                        is_superuser=True
+                    else:
+                        is_superuser=False
+                    is_staff=request.POST.get('is_staff')
+                    if is_staff=='on':
+                        is_staff=True
+                    else:
+                        is_staff=False
+                    obj.phone_number=request.POST.get('phone_number')
+                    obj.is_active=is_active
+                    obj.is_superuser=is_superuser
+                    obj.is_staff=is_staff
+                    if  check_sms_panel(option='option3'):
+                        if forti_can_manage_users():
+                            if update_linux_user(usrname,phone_number): 
+                                if modify_forti_user(status=status,user_group=user_group,username=usrname):
+                                    obj.save(update_fields=['user_group','phone_number','is_active','is_superuser','is_staff'])
+                                    # send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,obj.password)
+
+                                    messages.success(request,'اطلاعات فایروال و سرور لینوکس به روز رسانی شدند')
+                                else:
+                                    messages.error(request, "خطا در به روز رسانی  کاربر فایروال.--مشخصات کاربر لینوکس و فایروال ممکن است دارای تناقض شده باشد")
+                                    
+
+                            else:
+                                messages.error(request, "خطا در به روز رسانی  کاربر در لینوکس.")
+                        else:
+                            messages.error(request, "خطا در  دسترسی به فایروال.")
+
+                    else:
+                         # SMS PANEL NOT WORKING
+                        print ('check_sms_panel NOT passed #############################')
+                        self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:پنل پیامکی ", level=messages.ERROR)               
+                        #************************************
 
 
-    #         #************************************
+                    # if not obj.is_verified and obj.is_active:
+                    #     obj.is_verified=obj.is_active
+                    #     obj.date_verify=datetime.datetime.now()
+                               
+                    # EDIT USER BY REGISTERATION IN ADMIN PANEL
+                    #************************************
+                else:
+                    # obj.is_verified is not TRUE and Admin should verify user
+                    #************************************
+                    usrname=request.POST.get('username')
+                    password=request.POST.get('password1')
+                    first_name=request.POST.get('first_name')
+                    last_name=request.POST.get('last_name')
+                    user_group=[form.cleaned_data.get('user_group').fortigate_name]
+                    phone_number=request.POST.get('phone_number')
+                    is_active=request.POST.get('is_active')
+                    if is_active:
+                        status='enable'
+                    status='disable'
+                    if  check_sms_panel(option='option3'):
+                        if can_create_linux_user(usrname): 
+                            if forti_can_manage_users() and not forti_user_exists(usrname): 
+                                obj.is_verified=True
+                                obj.date_verify=datetime.datetime.now()
+                                user_data = {
+                                "name": usrname,  # Username for the new user
+                                "passwd": password,  # Set the user's password
+                                "email-to": usrname+'@'+EMAIL_DOMAIN,  # Email address for two-factor authentication
+                                "two-factor": "email",  # Enable email-based two-factor authentication
+                                "status": status,  # User account status: enable or disable
+                                "group": user_group,  # Add user to the 'edari-access' group
+                                "auth-concurrent": "disable"  # Disable concurrent authentication
+                                }
+                                print ('check_sms_panel is passed #############################')
+                                if create_linux_user(username=usrname,first_name=first_name,last_name=last_name,phone_number=phone_number):
+                                    print ('create_linux_user is passed #############################')
+                                    if create_forti_user(user_data):
+                                        print ('create_forti_user is passed #############################')
+                                        super().save_model(request, obj, form, change)
+                                        # send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
+                                    else:
+                                        delete_linux_user(usrname)
+                                        self.message_user(request, "در ساخت یوزر در فایروال مشکلی پیش آمده", level=messages.ERROR)                                
 
-    #         if obj.is_verified:
-    #             print("obj.is_verified IS TRUE")
-    #             # ONLY EDIT REQUIRED --USER VERIFIED BEFORE BY ADMIN
-    #             #********************************
-    #              #************************************
-    #             pass
-    #         else: 
+                                else:
+                                    #LINUX PROBLEM IN CREATING USER
+                                    print ('create_linux_user NOT passed #############################')
+                                    self.message_user(request, "در ساخت یوزر در سرور لینوکس مشکلی پیش آمده", level=messages.ERROR)                
+                            else:#fORTI
+                                # fORTI NOT WORKING
+                                print ('fORTI NOT passed #############################')
+                                self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد: فایروال ", level=messages.ERROR)
+                        else:#linux
+                            # linux NOT WORKING
+                            print ('LINUX NOT passed #############################')
+                            self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:لینوکس  ", level=messages.ERROR)
+                    else:
+                        # SMS PANEL NOT WORKING
+                        print ('check_sms_panel NOT passed #############################')
+                        self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:پنل پیامکی ", level=messages.ERROR)               
+                        #************************************
+            else:
+                # EDIT USER BY REGISTERATION IN WEBFORM
+                #********************************
+
+                pass
+
+                #************************************          
+
                 
-    #             print("obj.is_verified IS False")
-    #             # SAVE NEW OBJ AND VERIFY BY ADMIN
-    #             #********************************
-    #             #************************************
-    #             pass 
-
-                
-    #     else:
-    #         print(" CHANGE IS FALSE NEW USER....") 
-    #         #ADD NEW USER BY ADMIN
-    #         #********************************
-    #         usrname=request.POST.get('username')
-    #         password=request.POST.get('password1')
-    #         first_name=request.POST.get('first_name')
-    #         last_name=request.POST.get('last_name')
-    #         user_group=[form.cleaned_data.get('user_group').fortigate_name]
-    #         phone_number=request.POST.get('phone_number')
-    #         #TODO CHECK USER DOES NOT EXIST 
-    #         if  check_sms_panel(option='option3'):
-    #             if can_create_linux_user(usrname): 
-    #                 if forti_can_manage_users() and not forti_user_exists(usrname): 
-    #                     user_data = {
-    #                     "name": usrname,  # Username for the new user
-    #                     "passwd": password,  # Set the user's password
-    #                     "email-to": usrname+'@'+EMAIL_DOMAIN,  # Email address for two-factor authentication
-    #                     "two-factor": "email",  # Enable email-based two-factor authentication
-    #                     "status": "enable",  # User account status: enable or disable
-    #                     "group": user_group,  # Add user to the 'edari-access' group
-    #                     "auth-concurrent": "disable"  # Disable concurrent authentication
-    #                     }
-    #                     print ('check_sms_panel is passed #############################')
-    #                     if create_linux_user(username=usrname,first_name=first_name,last_name=last_name,phone_number=phone_number):
-    #                         print ('create_linux_user is passed #############################')
-    #                         if create_forti_user(user_data):
-    #                             print ('create_forti_user is passed #############################')
-                        
-    #                             obj.is_verified=obj.is_active
-    #                             if obj.is_verified:
-    #                                 obj.date_verify=datetime.datetime.now()
-                                
-    #                             super().save_model(request, obj, form, change)
-    #                             print ('save model is passed #############################')
-    #                             # send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
-    #                             print ('send_sms is passed #############################')
-    #                         else:
-    #                             delete_linux_user(usrname)
-    #                             self.message_user(request, "در ساخت یوزر در فایروال مشکلی پیش آمده", level=messages.ERROR)                                
-
-    #                     else:
-    #                         #LINUX PROBLEM IN CREATING USER
-    #                         print ('create_linux_user NOT passed #############################')
-    #                         self.message_user(request, "در ساخت یوزر در سرور لینوکس مشکلی پیش آمده", level=messages.ERROR)                
-    #                 else:#fORTI
-    #                     # fORTI NOT WORKING
-    #                     print ('fORTI NOT passed #############################')
-    #                     self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد: فایروال ", level=messages.ERROR)
-    #             else:#linux
-    #                 # linux NOT WORKING
-    #                 print ('LINUX NOT passed #############################')
-    #                 self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:لینوکس  ", level=messages.ERROR)
-                        
-    #         else:#check_sms_panel
-    #             # SMS PANEL NOT WORKING
-    #             print ('check_sms_panel NOT passed #############################')
-    #             self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:پنل پیامکی ", level=messages.ERROR)               
-
-    #             #************************************
+        else:
+            # NEW USER BY REGISTERATION IN ADMIN PANEL
+                #********************************
             
+            if request and request.path.startswith('/admin/usrsmgmnt/'):
+
+                print(" CHANGE IS TRUE NEW USER....") 
+                #ADD NEW USER BY ADMIN
+                #********************************
+                usrname=request.POST.get('username')
+                password=request.POST.get('password1')
+                first_name=request.POST.get('first_name')
+                last_name=request.POST.get('last_name')
+                user_group=[form.cleaned_data.get('user_group').fortigate_name]
+                phone_number=request.POST.get('phone_number')
+                is_active=request.POST.get('is_active')
+                if is_active:
+                    status='enable'
+                status='disable'
+                #TODO CHECK USER DOES NOT EXIST 
+                if  check_sms_panel(option='option3'):
+                    if can_create_linux_user(usrname): 
+                        if forti_can_manage_users() and not forti_user_exists(usrname): 
+                            user_data = {
+                            "name": usrname,  # Username for the new user
+                            "passwd": password,  # Set the user's password
+                            "email-to": usrname+'@'+EMAIL_DOMAIN,  # Email address for two-factor authentication
+                            "two-factor": "email",  # Enable email-based two-factor authentication
+                            "status": status,  # User account status: enable or disable
+                            "group": user_group,  # Add user to the 'edari-access' group
+                            "auth-concurrent": "disable"  # Disable concurrent authentication
+                            }
+                            print ('check_sms_panel is passed #############################')
+                            if create_linux_user(username=usrname,first_name=first_name,last_name=last_name,phone_number=phone_number):
+                                print ('create_linux_user is passed #############################')
+                                if create_forti_user(user_data):
+                                    print ('create_forti_user is passed #############################')
+                            
+                                    obj.is_verified=obj.is_active
+                                    if obj.is_verified:
+                                        obj.date_verify=datetime.datetime.now()
+                                    
+                                    super().save_model(request, obj, form, change)
+                                    print ('save model is passed #############################')
+                                    if obj.is_verified:
+                                        pass
+                                        # send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
+
+                                    print ('send_sms is passed #############################')
+                                else:
+                                    delete_linux_user(usrname)
+                                    self.message_user(request, "در ساخت یوزر در فایروال مشکلی پیش آمده", level=messages.ERROR)                                
+
+                            else:
+                                #LINUX PROBLEM IN CREATING USER
+                                print ('create_linux_user NOT passed #############################')
+                                self.message_user(request, "در ساخت یوزر در سرور لینوکس مشکلی پیش آمده", level=messages.ERROR)                
+                        else:#fORTI
+                            # fORTI NOT WORKING
+                            print ('fORTI NOT passed #############################')
+                            self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد: فایروال ", level=messages.ERROR)
+                    else:#linux
+                        # linux NOT WORKING
+                        print ('LINUX NOT passed #############################')
+                        self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:لینوکس  ", level=messages.ERROR)
+                            
+                else:#check_sms_panel
+                    # SMS PANEL NOT WORKING
+                    print ('check_sms_panel NOT passed #############################')
+                    self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:پنل پیامکی ", level=messages.ERROR)               
+                    #************************************
+
+            else:
+                print(" CHANGE IS FALSE... NEW USER BY WEB FORM....") 
+                #ADD NEW USER BY WEB FORM
+                #********************************
+                pass
+                
+                #********************************
+                
 
     
     # def save_my_model(self, request, obj, form, change):
