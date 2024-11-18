@@ -58,6 +58,7 @@ def melli_payamak_retrieve_credit():
             logger.exception(
                 f"An Exception eccured when fetching credit from SMS panel {status}"
             )
+            return response.json()["status"]
 
     except Exception as e:
         # print (response)
@@ -65,7 +66,7 @@ def melli_payamak_retrieve_credit():
         logger.exception(
             f"An Exception eccured when fetching credit from SMS panel:{e} "
         )
-    return response.json()["status"]
+        return response.json()["status"]
 
 
 # تابع اصلی برای انتخاب و اجرای تابع براساس فلگ

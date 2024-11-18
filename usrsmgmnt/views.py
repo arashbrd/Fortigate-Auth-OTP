@@ -57,7 +57,13 @@ def register_user(request):
                 # ?#TODO:SEND SMS()
                 if check_sms_panel("option3"):
                     # send_sms('option3','09173303491',264902,'ae33a10a6bf24822b2dbb101038f5279','آرش بردبار')
-                    # send_sms('option3',form.cleaned_data['phone_number'],264902,MELLI_PAYAMAK_API_KEY,f'{user.farsi_first_name+' '+user.farsi_last_name}')
+                    send_sms(
+                        "option3",
+                        form.cleaned_data["phone_number"],
+                        264902,
+                        MELLI_PAYAMAK_API_KEY,
+                        f"{user.farsi_first_name+' '+user.farsi_last_name}",
+                    )
 
                     request.session["sms_panel_is_ok"] = True
                     logger.info(

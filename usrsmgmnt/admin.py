@@ -5,7 +5,6 @@ from django.contrib import messages
 from utils.sms.send_sms import send_sms
 from django.utils.html import format_html
 from .models import LinFortiUsers, LogEntry
-
 from utils.forti.forti_utils import get_fortigate_specs
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from utils.sms.retrieve_credit import check_sms_panel, retrieve_credit
@@ -137,8 +136,8 @@ class LinFortiUserAdmin(BaseUserAdmin):
         with transaction.atomic():
             for obj in queryset:
                 try:
-                    if delete_linux_user(obj.username):
-                        if delete_forti_user(obj.username):
+                    if delete_forti_user(obj.username):
+                        if delete_linux_user(obj.username):
                             print("DELETE IS OK")
                             obj.prevent_delete = False
                         else:
@@ -246,10 +245,10 @@ class LinFortiUserAdmin(BaseUserAdmin):
                     is_active = request.POST.get("is_active")
                     if is_active == "on":
                         is_active = True
-                        status = "enable"
+                        status = "enabled"
                     else:
                         is_active = False
-                        status = "disable"
+                        status = "disabled"
                     is_superuser = request.POST.get("is_superuser")
                     if is_superuser == "on":
                         is_superuser = True
@@ -328,9 +327,9 @@ class LinFortiUserAdmin(BaseUserAdmin):
                     user_group = [form.cleaned_data.get("user_group").fortigate_name]
                     phone_number = request.POST.get("phone_number")
                     is_active = request.POST.get("is_active")
-                    if is_active:
-                        status = "enable"
-                    status = "disable"
+                    if is_active == "on":
+                        status = "enabled"
+                    status = "disabled"
                     if check_sms_panel(option="option3"):
                         if can_create_linux_user(usrname):
                             if forti_can_manage_users() and not forti_user_exists(
@@ -426,19 +425,24 @@ class LinFortiUserAdmin(BaseUserAdmin):
 
             if request and request.path.startswith("/admin/usrsmgmnt/"):
 
-                print(" CHANGE IS TRUE NEW USER....")
+                print(" CHANGE IS False NEW USER....")
                 # ADD NEW USER BY ADMIN
                 # ********************************
                 usrname = request.POST.get("username")
                 password = request.POST.get("password1")
                 first_name = request.POST.get("first_name")
                 last_name = request.POST.get("last_name")
-                user_group = [form.cleaned_data.get("user_group").fortigate_name]
+                user_group = form.cleaned_data.get("user_group").fortigate_name
                 phone_number = request.POST.get("phone_number")
                 is_active = request.POST.get("is_active")
-                if is_active:
-                    status = "enable"
-                status = "disable"
+                if is_active == "on":
+                    status = "enabled"
+                status = "disabled"
+                print("**********************************")
+                print(
+                    f"usrname={usrname},password={password},first_name={first_name},last_name={last_name},user_group={user_group},phone_number={phone_number},is_active={is_active}"
+                )
+                print("**********************************")
                 # TODO CHECK USER DOES NOT EXIST
                 if check_sms_panel(option="option3"):
                     if can_create_linux_user(usrname):
@@ -451,7 +455,9 @@ class LinFortiUserAdmin(BaseUserAdmin):
                                 + EMAIL_DOMAIN,  # Email address for two-factor authentication
                                 "two-factor": "email",  # Enable email-based two-factor authentication
                                 "status": status,  # User account status: enable or disable
-                                "group": user_group,  # Add user to the 'edari-access' group
+                                "group": [
+                                    user_group
+                                ],  # Add user to the 'edari-access' group
                                 "auth-concurrent": "disable",  # Disable concurrent authentication
                             }
                             print(
@@ -538,67 +544,6 @@ class LinFortiUserAdmin(BaseUserAdmin):
                 pass
 
                 # ********************************
-
-    # def save_my_model(self, request, obj, form, change):
-    #     print ('1#############################')
-    #     usrname=request.POST.get('username')
-    #     password=request.POST.get('national_code')[-4:]
-    #     first_name=request.POST.get('first_name')
-    #     last_name=request.POST.get('last_name')
-    #     user_group=[form.cleaned_data.get('user_group').fortigate_name]
-    #     phone_number=request.POST.get('phone_number')
-
-    #     if user_group!=['']:
-    #         print ('not changed #############################')
-    #         if  check_sms_panel(option='option3'):
-    #             if can_create_linux_user(usrname):
-    #                 if forti_can_manage_users() and not forti_user_exists(usrname): #TODO  change request.user
-    #                     user_data = {
-    #                     "name": usrname,  # Username for the new user
-    #                     "passwd": password,  # Set the user's password
-    #                     "email-to": usrname+'@'+EMAIL_DOMAIN,  # Email address for two-factor authentication
-    #                     "two-factor": "email",  # Enable email-based two-factor authentication
-    #                     "status": "enable",  # User account status: enable or disable
-    #                     "group": user_group,  # Add user to the 'edari-access' group
-    #                     "auth-concurrent": "disable"  # Disable concurrent authentication
-    #                     }
-    #                     print ('check_sms_panel is passed #############################')
-    #                     if create_linux_user(username=usrname,first_name=first_name,last_name=last_name,phone_number=phone_number):
-    #                         print ('create_linux_user is passed #############################')
-    #                         if create_forti_user(user_data):
-    #                             print ('create_forti_user is passed #############################')
-
-    #                             obj.is_verified=True
-    #                             obj.date_verify=datetime.datetime.now()
-    #                             super().save_model(request, obj, form, change)
-    #                             print ('save model is passed #############################')
-    #                             # send_sms('option3',phone_number,264907,MELLI_PAYAMAK_API_KEY,usrname,password)
-    #                             print ('send_sms is passed #############################')
-    #                         else:
-    #                             delete_linux_user(usrname)
-    #                             self.message_user(request, "در ساخت یوزر در فایروال مشکلی پیش آمده", level=messages.ERROR)
-
-    #                     else:
-    #                         #LINUX PROBLEM IN CREATING USER
-    #                         print ('create_linux_user NOT passed #############################')
-    #                         self.message_user(request, "در ساخت یوزر در سرور لینوکس مشکلی پیش آمده", level=messages.ERROR)
-    #                 else:#fORTI
-    #                     # fORTI NOT WORKING
-    #                     print ('fORTI NOT passed #############################')
-    #                     self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد: فایروال ", level=messages.ERROR)
-    #             else:#linux
-    #                 # linux NOT WORKING
-    #                 print ('LINUX NOT passed #############################')
-    #                 self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:لینوکس  ", level=messages.ERROR)
-
-    #         else:#check_sms_panel
-    #             # SMS PANEL NOT WORKING
-    #             print ('check_sms_panel NOT passed #############################')
-    #             self.message_user(request, "در ارتباط با  یکی از موارد زیر مشکلی وجود دارد:پنل پیامکی ", level=messages.ERROR)
-
-    #     else:#user_group
-    #         print ('CHANGE IS TRUE #############################')
-    #         self.message_user(request, "Script failed, object was not saved.", level=messages.ERROR)
 
     list_display = (
         "farsi_first_name",

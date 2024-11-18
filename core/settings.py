@@ -29,7 +29,8 @@ LEAST_CREDIT_NUM = os.getenv("LEAST_CREDIT_NUM", "20")
 PANEL_WEB_ADDRESS = os.getenv("PANEL_WEB_ADDRESS", "#")
 PANEL_NAME = os.getenv("PANEL_NAME", "---")
 EMAIL_DOMAIN = os.getenv("EMAIL_DOMAIN", "automail.fums.ac.ir")
-
+FORTIGATE_API_KEY = os.getenv("FORTIGATE_API_KEY", "")
+FORTIGATE_IP = os.getenv("FORTIGATE_IP", "")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -75,8 +75,7 @@ class LinFortiUsers(AbstractUser):
 
     def delete(self, *args, **kwargs):
         if self.prevent_delete:
-            print("&&&&&&&&&&&&&&&&&&&&")
-            print(f"prevent_delete = {self.prevent_delete}")
+
             return
         super().delete(*args, **kwargs)
 

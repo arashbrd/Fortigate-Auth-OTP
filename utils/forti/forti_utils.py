@@ -2,6 +2,32 @@ import os
 import requests
 import urllib3
 from dotenv import load_dotenv
+from core.settings import FORTIGATE_API_KEY
+from core.settings import FORTIGATE_IP
+
+# FortiGate details
+api_key = FORTIGATE_API_KEY
+fortigate_ip = f"https://{FORTIGATE_IP}/"
+
+# Set up headers for API key authentication
+headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+
+def get_fortigate_model():
+    try:
+
+        status_endpoint = "api/v2/monitor/system/status"
+        print(fortigate_ip + status_endpoint)
+        response = requests.get(
+            fortigate_ip + status_endpoint, headers=headers, verify=False
+        )
+        print(f"response = {response.json()['results']['model_number']}")
+        if response.status_code == 200:
+            return response.json()["results"]["model_number"]
+        else:
+            raise Exception("Failed to fetch FortiGate model.")
+    except:
+        return "unknown"
 
 
 def get_fortigate_specs():
