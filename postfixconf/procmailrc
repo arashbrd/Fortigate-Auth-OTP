@@ -1,0 +1,3 @@
+VERBOSE=off
+:0
+| /etc/postfix/postfixlisten.sh
