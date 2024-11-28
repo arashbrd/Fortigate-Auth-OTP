@@ -1,3 +1,7 @@
-VERBOSE=off
+LOGFILE=/var/log/procmail.log
+
+VERBOSE=on
+
 :0
-| /etc/postfix/postfixlisten.sh
+|/etc/postfix/postfixlisten.sh
+

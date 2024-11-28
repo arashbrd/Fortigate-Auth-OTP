@@ -89,7 +89,7 @@ def delete_linux_user(username):
     try:
         # Run the userdel command with sudo to delete the user
         result = subprocess.run(
-            ["sudo", "userdel", username], capture_output=True, text=True, check=True
+            ["sudo", "userdel1", username], capture_output=True, text=True, check=True
         )
         print(f"User '{username}' deleted successfully.")
         if result.returncode == 0:

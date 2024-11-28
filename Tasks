@@ -49,3 +49,5 @@
 '''
      کد تایید دو مرحله ای سامانه احراز هویت  213796 {0}
 '''
+
+; sudo docker compose down --volumes --remove-orphans && sudo docker rmi app && sudo docker compose up -d&& sudo docker ps && sudo docker compose logs

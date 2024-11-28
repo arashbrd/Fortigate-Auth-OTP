@@ -42,7 +42,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-5&ajgrnic0b3n=&(1(bj7kaqum_++l9!uv*0js1w&vk3el_1)h"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", False)
+DEBUG =os.environ.get('DEBUG', 'False').lower() in ['true', '1', 't', 'yes']
 
 ALLOWED_HOSTS = [WEBSERVER_IP]
 
@@ -75,7 +75,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "core.urls"
 
-import os
 
 TEMPLATES = [
     {

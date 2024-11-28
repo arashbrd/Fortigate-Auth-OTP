@@ -6,6 +6,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+      
     volumes:
       - ./postgress/data:/var/lib/postgresql/data
     restart: always
@@ -16,15 +17,27 @@ services:
       context: .
     image: app
     container_name: django-app
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --no-input  &&
-             gunicorn core.wsgi:application --bind 0.0.0.0:8000"
+    hostname: automail.fums.ac.ir
     volumes:
       - static:/app/static
-      # - media:/usr/src/app/media
+      - ./logs/sms:/var/log/sms
+      - ./logs/mail/mail.log:/var/log/mail.log
+      - ./logs/mail/procmail.log:/var/log/procmail.log
+      - ./usersconf/passwd:/etc/passwd:rw
+      
+    command: >
+      sh -c   "postfix start &&
+              python manage.py migrate &&
+             python manage.py collectstatic --no-input  &&
+             gunicorn core.wsgi:application --bind 0.0.0.0:8000"
+             
+    
     depends_on:
       - database
+    ports:
+      - "25:25"       # SMTP (for receiving emails)
+      - "587:587"     # Submission (for client email submissions)
+      - "143:143"
     environment:
       - DEBUG=False
       # - ALLOWED_HOSTS=*
@@ -33,20 +46,24 @@ services:
       - DATABASE-PASSWORD=postgres
       - DATABASE-HOST=database
       - DATABASE-PORT=5432
-
-
+    restart: always
   nginx:
     image: nginx
     container_name: nginx
     ports:
       - "80:80"
     volumes:
-      - ./nginx:/etc/nginx/conf.d
       - static:/var/www/static
+      - ./nginxconf:/etc/nginx/conf.d
       # - media:/var/www/media 
-    
-  
+   
+    depends_on:
+      - app
+    restart: always
 volumes:
   static:
+  # user_data:
+  #  external: true
+  
   # postgres:
   # media:

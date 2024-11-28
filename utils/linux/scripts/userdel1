@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Username to be removed
+USERNAME="$1"
+
+# Check if the script is run as root
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root!" >&2
+  exit 1
+fi
+
+# Check if the username is provided
+if [[ -z "$USERNAME" ]]; then
+  echo "Please provide a username as an argument." >&2
+  echo "Usage: $0 username"
+  exit 1
+fi
+
+# Check if the user exists
+if ! id "$USERNAME" &>/dev/null; then
+  echo "User $USERNAME does not exist." >&2
+  exit 1
+fi
+
+# Backup the /etc/passwd file
+BACKUP_FILE="/etc/passwd.bak.$(date +%F-%H%M%S)"
+cp /etc/passwd "$BACKUP_FILE"
+if [[ $? -ne 0 ]]; then
+  echo "Failed to create a backup of /etc/passwd." >&2
+  exit 1
+fi
+echo "Backup of /etc/passwd created at $BACKUP_FILE."
+
+# Remove the user's entry from /etc/passwd
+sed -i "/^$USERNAME:/d" /etc/passwd
+if [[ $? -eq 0 ]]; then
+  echo "User $USERNAME has been successfully removed from /etc/passwd."
+else
+  echo "Failed to remove user $USERNAME from /etc/passwd." >&2
+  exit 1
+fi
+
+# Verify the integrity of the /etc/passwd file
+if getent passwd >/dev/null

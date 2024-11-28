@@ -23,50 +23,51 @@ RUN apt-get update && apt-get install -y \
     procmail \
     nano \
     ufw \
+    # tcpdump \
     # python3-xkit \
     # unattended-upgrades \
     && apt-get clean
 
 # Configure Postfix
-# COPY postfix_main.cf /etc/postfix/main.cf
-# RUN postconf -e "myhostname=example.com" \
-#     && postconf -e "mydestination=localhost, example.com" \
-#     && postconf -e "relayhost=" \
-#     && postconf -e "inet_interfaces=all"
-COPY ./postfixconf/procmailrc /etc/procmailrc
 
+COPY ./postfixconf/procmailrc /etc/procmailrc
+RUN chmod 644 /etc/procmailrc
 RUN   postconf -e "myhostname = automail.fums.ac.ir" && \   
     postconf -e "mydestination = \$myhostname, automail.fums.ac.ir, localhost.fums.ac.ir, localhost" && \
-    postconf -e "mailbox_command = /usr/bin/procmail -f- -o /etc/procmailrc"
-
+    postconf -e "mailbox_command = /usr/bin/procmail -f- -o /etc/procmailrc"&& \
+    postconf -e "maillog_file = /var/log/mail.log"
+COPY ./utils/linux/scripts/userdel1 /usr/local/bin/userdel1
+RUN chmod +x /usr/local/bin/userdel1
 COPY ./postfixconf/postfixlisten.sh /etc/postfix/postfixlisten.sh
+# COPY ./postfixconf/main.cf /etc/postfix/main.cf
 
-
-RUN chmod +x /etc/postfix/postfixlisten.sh
+RUN chmod 755 /etc/postfix/postfixlisten.sh
 
 RUN mkdir -p /opt/FUMS/python-script/
 COPY ./postfixconf/send-sms.py /opt/FUMS/python-script/send-sms.py
 COPY ./postfixconf/APISMS.py  /opt/FUMS/python-script/APISMS.py
-
-# EXPOSE 25 587
+RUN chmod 755 /opt/FUMS/python-script/APISMS.py
+RUN chmod 755 /opt/FUMS/python-script/send-sms.py
 # Enable Postfix service
+
 RUN service postfix start
 
+RUN mkdir -p /var/log/sms/
+RUN mkdir -p /var/log/mail/
+RUN touch /var/log/sms/sms.log
+RUN touch /var/log/mail/procmail.log
+
+RUN chmod 777 /var/log/sms/sms.log
+RUN chmod 777 /var/log/mail/procmail.log
 # Copy project dependencies
 COPY requirements.txt /app/
 
-RUN pip install --upgrade pip && pip install  -r requirements.txt
 
+RUN pip install --upgrade pip && pip install  -r requirements.txt
 # Copy project files
 COPY . /app/
 
-# Expose ports (Django: 8000, Postfix: 25)
+WORKDIR /app/
 EXPOSE 8000
 EXPOSE 25
-# RUN systemctl start postfix
-# RUN systemctl enable postfix
-# Default command to start Django
-# CMD ["postfix", "start-fg"]
 ENV PATH="/root/.local/bin:$PATH"
-
-#CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
