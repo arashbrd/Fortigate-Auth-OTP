@@ -117,7 +117,7 @@ else:
         'NAME': os.environ.get('DATABASE-NAME', 'postgres'),
         'USER': os.environ.get('DATABASE-USER', 'postgres'),
         'PASSWORD': os.environ.get('DATABASE-PASSWORD', 'postgres'),
-        'HOST': os.environ.get('DATABASE-HOST', 'database'),
+        'HOST': os.environ.get('DATABASE-HOST', 'localhost'),
         'PORT': os.environ.get('DATABASE-PORT', 5432),
     }
 }
@@ -157,7 +157,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 STATIC_ROOT =   os.path.join(BASE_DIR, "static")
 
 # Directory to hold your static files
