@@ -114,11 +114,11 @@ else:
     DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DATABASE-NAME', 'postgres'),
-        'USER': os.environ.get('DATABASE-USER', 'postgres'),
-        'PASSWORD': os.environ.get('DATABASE-PASSWORD', 'postgres'),
-        'HOST': os.environ.get('DATABASE-HOST', 'localhost'),
-        'PORT': os.environ.get('DATABASE-PORT', 5432),
+        'NAME': os.getenv('DATABASE-NAME', 'postgres'),
+        'USER': os.getenv('DATABASE-USER', 'postgres'),
+        'PASSWORD': os.getenv('DATABASE-PASSWORD', 'postgres'),
+        'HOST': os.getenv('DATABASE-HOST', 'localhost'),
+        'PORT': os.getenv('DATABASE-PORT', 5432),
     }
 }
 
@@ -158,6 +158,7 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
+MEDIA_URL = "media/"
 STATIC_ROOT =   os.path.join(BASE_DIR, "static")
 
 # Directory to hold your static files
